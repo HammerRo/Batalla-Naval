@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Juego de Batalla Naval">
+    <title>Batalla Naval - Juego</title>
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="src/css/variables.css">
+    <link rel="stylesheet" href="src/css/base.css">
+    <link rel="stylesheet" href="src/css/components.css">
+    <link rel="stylesheet" href="src/css/animations.css">
+</head>
+<body>
+    <main class="game-container">
+        
+        <!-- Header -->
+        <header class="game-header">
+            <h1 class="game-title">⚓ Batalla Naval</h1>
+            <div class="game-status">
+                <span id="gameStatus">Prepara tus barcos</span>
+            </div>
+        </header>
+
+        <!-- Tableros -->
+        <section class="boards-container">
+            <div class="board-wrapper">
+                <h2 class="board-title">Tu Tablero</h2>
+                <div class="board-frame">
+                    <div id="playerBoard" class="board"></div>
+                </div>
+            </div>
+
+            <div class="board-wrapper">
+                <h2 class="board-title">Tablero Enemigo</h2>
+                <div class="board-frame">
+                    <div id="computerBoard" class="board board--disabled"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Panel de Barcos -->
+        <section class="ships-panel" id="shipsPanel">
+            <h2 class="panel-title">🚢 Selecciona tus Barcos</h2>
+            
+            <div class="orientation-selector">
+                <button class="btn-orientation btn-orientation--active" id="btnHorizontal">
+                    ➡️ Horizontal (H)
+                </button>
+                <button class="btn-orientation" id="btnVertical">
+                    ⬇️ Vertical (V)
+                </button>
+            </div>
+
+            <div class="ships-grid" id="shipsGrid">
+                <!-- Barcos se renderizan aquí -->
+            </div>
+
+            <div class="placement-hint" id="placementHint">
+                Selecciona un barco para comenzar
+            </div>
+        </section>
+
+        <!-- Controles -->
+        <section class="controls-panel">
+            <button class="btn btn--primary btn--large" id="btnStart" disabled>
+                Iniciar Juego
+            </button>
+            <button class="btn btn--secondary" id="btnReset">
+                Reiniciar
+            </button>
+            <button class="btn btn--secondary" id="btnRandomize">
+                Colocación Aleatoria
+            </button>
+        </section>
+
+    </main>
+
+    <!-- Modal Game Over -->
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle"></h2>
+            </div>
+            <div class="modal-body">
+                <div id="finalStats"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn--primary" id="btnPlayAgain">Jugar de Nuevo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Script Principal -->
+    <script type="module" src="src/js/main.js"></script>
+</body>
+</html>
