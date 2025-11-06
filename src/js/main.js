@@ -1,12 +1,16 @@
 import { GameController } from './controllers/GameController.js';
 import { UIManager } from './views/UIManager.js';
 import { LoginScreen } from './views/LoginScreen.js';
+import { MenuController } from './controllers/MenuController.js';
+import { MenuView } from './views/MenuView.js';
 
 class BattleshipApp {
     constructor() {
         this.gameController = null;
         this.uiManager = null;
         this.loginScreen = null;
+        this.menuController = null;
+        this.menuView = null;
         this.currentUser = null;
     }
 
@@ -34,10 +38,65 @@ class BattleshipApp {
     }
 
     onLoginSuccess(user) {
-        console.log('✅ Usuario autenticado:', user.username);
+        console.log('✅ Usuario autenticado:', user.username || 'Invitado');
         this.currentUser = user;
 
+        // Remover pantalla de login
+        const loginScreen = document.getElementById('loginScreen');
+        if (loginScreen) {
+            loginScreen.remove();
+        }
+
+        // Mostrar menú principal
+        this.showMainMenu();
+    }
+
+    showMainMenu() {
+        console.log('📋 Mostrando menú principal...');
+        
         try {
+            // Crear controlador del menú
+            this.menuController = new MenuController();
+
+            // Crear vista del menú
+            this.menuView = new MenuView(this.menuController);
+            const menuElement = this.menuView.render(this.currentUser);
+
+            // Agregar menú al DOM
+            document.body.appendChild(menuElement);
+
+            // Conectar eventos del menú
+            this.menuController.on('start-game', () => this.startGame());
+            this.menuController.on('navigate', (section) => this.navigateMenu(section));
+            this.menuController.on('logout', () => this.logout());
+
+            console.log('✅ Menú principal mostrado');
+
+            // Exponer para debugging
+            window.game = {
+                menu: this.menuController,
+                user: this.currentUser
+            };
+
+        } catch (error) {
+            console.error('❌ Error al mostrar menú:', error);
+            this.showErrorScreen(error);
+        }
+    }
+
+    /**
+     * Inicia un nuevo juego
+     */
+    startGame() {
+        console.log('🎮 Iniciando nuevo juego...');
+        
+        try {
+            // Remover menú
+            const menuScreen = document.getElementById('menuScreen');
+            if (menuScreen) {
+                menuScreen.remove();
+            }
+
             // Crear controlador del juego
             this.gameController = new GameController();
             console.log('✅ GameController creado');
@@ -61,9 +120,69 @@ class BattleshipApp {
             };
 
         } catch (error) {
-            console.error('❌ Error al inicializar el juego:', error);
+            console.error('❌ Error al iniciar juego:', error);
             this.showErrorScreen(error);
         }
+    }
+
+    /**
+     * Navega dentro del menú
+     * @param {string} section - Sección a navegar
+     */
+    navigateMenu(section) {
+        console.log(`📍 Navegando a sección: ${section}`);
+        
+        switch (section) {
+            case 'settings':
+                this.showSettings();
+                break;
+            case 'help':
+                this.showHelp();
+                break;
+            default:
+                this.showMainMenu();
+        }
+    }
+
+    /**
+     * Muestra la pantalla de configuración
+     */
+    showSettings() {
+        console.log('⚙️ Mostrando configuración...');
+        // TODO: Implementar pantalla de configuración para RF02
+        alert('Configuración - Próximamente disponible');
+        this.menuController.backToMenu();
+    }
+
+    /**
+     * Muestra la pantalla de ayuda
+     */
+    showHelp() {
+        console.log('❓ Mostrando ayuda...');
+        // TODO: Implementar pantalla de ayuda para RF02
+        alert('Ayuda - Próximamente disponible');
+        this.menuController.backToMenu();
+    }
+
+    /**
+     * Cierra sesión del usuario
+     */
+    logout() {
+        console.log('👋 Cerrando sesión...');
+        
+        // Remover menú
+        const menuScreen = document.getElementById('menuScreen');
+        if (menuScreen) {
+            menuScreen.remove();
+        }
+
+        // Remover datos del usuario
+        this.currentUser = null;
+        this.menuController = null;
+        this.menuView = null;
+
+        // Volver a mostrar pantalla de login
+        this.showLoginScreen();
     }
 
     showErrorScreen(error) {
