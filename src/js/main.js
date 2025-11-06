@@ -1,16 +1,43 @@
 import { GameController } from './controllers/GameController.js';
 import { UIManager } from './views/UIManager.js';
+import { LoginScreen } from './views/LoginScreen.js';
 
 class BattleshipApp {
     constructor() {
         this.gameController = null;
         this.uiManager = null;
+        this.loginScreen = null;
+        this.currentUser = null;
     }
 
     initialize() {
         try {
             console.log('🚢 Inicializando Batalla Naval...');
 
+            // Mostrar pantalla de login
+            this.showLoginScreen();
+
+        } catch (error) {
+            console.error('❌ Error al inicializar el juego:', error);
+            this.showErrorScreen(error);
+        }
+    }
+
+    showLoginScreen() {
+        console.log('📝 Mostrando pantalla de login...');
+        
+        this.loginScreen = new LoginScreen();
+        this.loginScreen.onLoginSuccess = (user) => this.onLoginSuccess(user);
+
+        const loginElement = this.loginScreen.render();
+        document.body.insertBefore(loginElement, document.body.firstChild);
+    }
+
+    onLoginSuccess(user) {
+        console.log('✅ Usuario autenticado:', user.username);
+        this.currentUser = user;
+
+        try {
             // Crear controlador del juego
             this.gameController = new GameController();
             console.log('✅ GameController creado');
@@ -21,7 +48,7 @@ class BattleshipApp {
             }
 
             // Crear gestor de UI
-            this.uiManager = new UIManager(this.gameController);
+            this.uiManager = new UIManager(this.gameController, this.currentUser);
             console.log('✅ UIManager creado');
 
             console.log('✅ Juego inicializado correctamente');
@@ -29,7 +56,8 @@ class BattleshipApp {
             // Exponer para debugging
             window.game = {
                 controller: this.gameController,
-                ui: this.uiManager
+                ui: this.uiManager,
+                user: this.currentUser
             };
 
         } catch (error) {

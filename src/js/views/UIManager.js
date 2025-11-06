@@ -2,14 +2,16 @@ import { BoardView } from './BoardView.js';
 import { ORIENTATIONS, CSS_CLASSES, MESSAGES } from '../config/constants.js';
 
 export class UIManager {
-    constructor(gameController) {
+    constructor(gameController, currentUser = null) {
         this.gameController = gameController;
+        this.currentUser = currentUser;
         
         this.initializeElements();
         this.initializeViews();
         this.attachEventListeners();
         this.subscribeToGameEvents();
         this.renderShipsPanel();
+        this.updateUserDisplay();
     }
 
     initializeElements() {
@@ -28,7 +30,8 @@ export class UIManager {
             modalTitle: document.querySelector('#modalTitle'),
             finalStats: document.querySelector('#finalStats'),
             btnPlayAgain: document.querySelector('#btnPlayAgain'),
-            toastContainer: document.querySelector('#toastContainer')
+            toastContainer: document.querySelector('#toastContainer'),
+            gameHeader: document.querySelector('.game-header')
         };
     }
 
@@ -404,5 +407,31 @@ export class UIManager {
         setTimeout(() => {
             toast.remove();
         }, 3000);
+    }
+
+    // User Display
+
+    updateUserDisplay() {
+        if (!this.currentUser || !this.elements.gameHeader) return;
+
+        let userDisplay = this.elements.gameHeader.querySelector('.user-display');
+        
+        if (!userDisplay) {
+            userDisplay = document.createElement('div');
+            userDisplay.className = 'user-display';
+            this.elements.gameHeader.appendChild(userDisplay);
+        }
+
+        const guestBadge = this.currentUser.isGuest ? ' 👤 (Invitado)' : '';
+        userDisplay.innerHTML = `
+            <div class="user-info">
+                <span class="user-name">👤 ${this.currentUser.username}${guestBadge}</span>
+                ${!this.currentUser.isGuest ? `
+                    <span class="user-stats">
+                        📊 V: ${this.currentUser.gamesWon}/${this.currentUser.gamesPlayed}
+                    </span>
+                ` : ''}
+            </div>
+        `;
     }
 }
