@@ -3,6 +3,7 @@ import { UIManager } from './views/UIManager.js';
 import { LoginScreen } from './views/LoginScreen.js';
 import { MenuController } from './controllers/MenuController.js';
 import { MenuView } from './views/MenuView.js';
+import { GameModeView } from './views/GameModeView.js';
 
 class BattleshipApp {
     constructor() {
@@ -11,7 +12,9 @@ class BattleshipApp {
         this.loginScreen = null;
         this.menuController = null;
         this.menuView = null;
+        this.gameModeView = null;
         this.currentUser = null;
+        this.gameMode = null; // 'ai' o 'local'
     }
 
     initialize() {
@@ -66,7 +69,7 @@ class BattleshipApp {
             document.body.appendChild(menuElement);
 
             // Conectar eventos del menú
-            this.menuController.on('start-game', () => this.startGame());
+            this.menuController.on('start-game', () => this.showGameModeSelection());
             this.menuController.on('navigate', (section) => this.navigateMenu(section));
             this.menuController.on('logout', () => this.logout());
 
@@ -85,10 +88,10 @@ class BattleshipApp {
     }
 
     /**
-     * Inicia un nuevo juego
+     * Muestra la pantalla de selección de modo de juego
      */
-    startGame() {
-        console.log('🎮 Iniciando nuevo juego...');
+    showGameModeSelection() {
+        console.log('🎮 Mostrando selección de modo de juego...');
         
         try {
             // Remover menú
@@ -97,8 +100,69 @@ class BattleshipApp {
                 menuScreen.remove();
             }
 
-            // Crear controlador del juego
+            // Crear vista de selección de modo
+            this.gameModeView = new GameModeView(this.menuController);
+            const gameModeElement = this.gameModeView.render();
+
+            // Agregar a DOM
+            document.body.appendChild(gameModeElement);
+
+            // Conectar evento de selección de modo
+            this.menuController.on('game-mode-selected', (data) => this.onGameModeSelected(data));
+            this.menuController.on('back-to-menu', () => this.backToMenuFromGameMode());
+
+            console.log('✅ Pantalla de selección de modo mostrada');
+
+        } catch (error) {
+            console.error('❌ Error al mostrar selección de modo:', error);
+            this.showErrorScreen(error);
+        }
+    }
+
+    /**
+     * Maneja la selección del modo de juego
+     * @param {Object} data - Datos con el modo seleccionado (ai o local)
+     */
+    onGameModeSelected(data) {
+        console.log(`🎮 Modo seleccionado: ${data.mode === 'ai' ? 'Contra la Máquina' : 'Contra un Amigo'}`);
+        
+        this.gameMode = data.mode;
+        this.startGame();
+    }
+
+    /**
+     * Vuelve al menú desde la pantalla de selección de modo
+     */
+    backToMenuFromGameMode() {
+        console.log('🔙 Volviendo al menú desde selección de modo...');
+        
+        // Remover pantalla de selección de modo
+        const gameModeScreen = document.getElementById('gameModeScreen');
+        if (gameModeScreen) {
+            gameModeScreen.remove();
+        }
+
+        // Mostrar menú nuevamente
+        this.showMainMenu();
+    }
+
+    /**
+     * Inicia un nuevo juego con el modo seleccionado
+     */
+    startGame() {
+        console.log('🎮 Iniciando nuevo juego...');
+        
+        try {
+            // Remover pantalla de selección de modo
+            const gameModeScreen = document.getElementById('gameModeScreen');
+            if (gameModeScreen) {
+                gameModeScreen.remove();
+            }
+
+            // Crear controlador del juego con el modo seleccionado
             this.gameController = new GameController();
+            this.gameController.gameMode = this.gameMode; // Pasar modo de juego
+            
             console.log('✅ GameController creado');
 
             // Verificar métodos
@@ -106,17 +170,19 @@ class BattleshipApp {
                 throw new Error('GameController no tiene el método getAvailableShips');
             }
 
-            // Crear gestor de UI
+            // Crear gestor de UI con modo de juego
             this.uiManager = new UIManager(this.gameController, this.currentUser);
             console.log('✅ UIManager creado');
 
             console.log('✅ Juego inicializado correctamente');
+            console.log(`📊 Modo de juego: ${this.gameMode === 'ai' ? '🤖 Contra la Máquina' : '👥 Contra un Amigo'}`);
 
             // Exponer para debugging
             window.game = {
                 controller: this.gameController,
                 ui: this.uiManager,
-                user: this.currentUser
+                user: this.currentUser,
+                mode: this.gameMode
             };
 
         } catch (error) {
