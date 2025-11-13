@@ -37,6 +37,11 @@ export class UIManager {
 
             // Sugerencia inicial
             this.updatePlacementHint('Coloca tus barcos. Presiona ¡A jugar! para comenzar');
+            // Ajustar layout del contenedor principal para mostrar panel a la derecha
+            const appContainer = document.querySelector('.game-container');
+            if (appContainer) {
+                appContainer.classList.add('placement-side');
+            }
         }
     }
 
@@ -307,6 +312,12 @@ export class UIManager {
             boardsContainer.classList.remove('single-board');
         }
 
+        // Quitar layout lateral si estaba activo
+        const appContainer = document.querySelector('.game-container');
+        if (appContainer) {
+            appContainer.classList.remove('placement-side');
+        }
+
         this.computerBoardView.enable();
         this.computerBoardView.render(this.gameController.computerPlayer.board);
 
@@ -379,9 +390,13 @@ export class UIManager {
         if (this.gameController?.gameMode === 'ai') {
             if (computerWrapper) computerWrapper.style.display = 'none';
             if (boardsContainer) boardsContainer.classList.add('single-board');
+            const appContainer = document.querySelector('.game-container');
+            if (appContainer) appContainer.classList.add('placement-side');
         } else {
             if (computerWrapper) computerWrapper.style.display = '';
             if (boardsContainer) boardsContainer.classList.remove('single-board');
+            const appContainer = document.querySelector('.game-container');
+            if (appContainer) appContainer.classList.remove('placement-side');
         }
 
         this.showToast('Juego reiniciado', 'success');

@@ -37,6 +37,55 @@
     align-items: start;
 }
 
+/* Layout lateral para la fase de colocación (tablero + panel de barcos a la derecha) */
+.game-container.placement-side {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    grid-template-rows: auto 1fr auto;
+    gap: var(--spacing-xl);
+    grid-template-areas:
+        "header header"
+        "boards ships"
+        "controls controls";
+}
+
+.game-container.placement-side .game-header {
+    grid-area: header;
+}
+
+.game-container.placement-side .boards-container {
+    grid-area: boards;
+}
+
+.game-container.placement-side .ships-panel {
+    grid-area: ships;
+    align-self: start;
+    margin-top: 0;
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+}
+
+.game-container.placement-side .controls-panel {
+    grid-area: controls;
+}
+
+/* Make ships panel visually closer to the board (like screenshot) */
+.game-container.placement-side .ships-panel {
+    margin-left: 0.5rem;
+    padding: var(--spacing-lg);
+}
+
+@media (max-width: 900px) {
+    .game-container.placement-side {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "header"
+            "boards"
+            "ships"
+            "controls";
+    }
+}
+
 .board-wrapper {
     display: flex;
     flex-direction: column;
