@@ -389,3 +389,51 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Turn indicator (arrow + timer) */
+.turn-indicator {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin: calc(var(--spacing-md) * -0.5) 0 var(--spacing-md);
+}
+
+.turn-arrow {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(0deg);
+    transition: transform 0.25s ease, background 0.2s;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    cursor: default;
+}
+
+.turn-arrow::after {
+    content: '➤';
+    color: white;
+    font-size: 1.4rem;
+    transform: translateX(2px);
+}
+
+.turn-arrow.turn-left {
+    transform: rotate(180deg);
+}
+
+.turn-timer {
+    background: rgba(0,0,0,0.06);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    min-width: 44px;
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .turn-arrow { width: 40px; height: 40px; }
+}

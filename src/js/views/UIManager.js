@@ -65,6 +65,11 @@ export class UIManager {
             toastContainer: document.querySelector('#toastContainer'),
             gameHeader: document.querySelector('.game-header')
         };
+
+        // Turn indicator elements
+        this.elements.turnIndicator = document.querySelector('#turnIndicator');
+        this.elements.turnArrow = document.querySelector('#turnArrow');
+        this.elements.turnTimer = document.querySelector('#turnTimer');
     }
 
     initializeViews() {
@@ -117,6 +122,10 @@ export class UIManager {
         this.gameController.on('shipPlaced', (data) => this.onShipPlaced(data));
         this.gameController.on('allShipsPlaced', () => this.onAllShipsPlaced());
         this.gameController.on('gameStarted', (data) => this.onGameStarted(data));
+        this.gameController.on('turnStarted', (data) => this.onTurnStarted(data));
+        this.gameController.on('turnTick', (data) => this.onTurnTick(data));
+        this.gameController.on('turnChanged', (data) => this.onTurnChanged(data));
+        this.gameController.on('turnTimeout', (data) => this.onTurnTimeout(data));
         this.gameController.on('cellAttacked', (data) => this.onCellAttacked(data));
         this.gameController.on('shipHit', (data) => this.onShipHit(data));
         this.gameController.on('shipSunk', (data) => this.onShipSunk(data));
@@ -201,12 +210,31 @@ export class UIManager {
 
         if (isNaN(row) || isNaN(col)) return;
 
-        const success = this.gameController.placeSelectedShip(row, col);
+        const state = this.gameController.getGameState();
 
-        if (success) {
-            this.playerBoardView.render(this.gameController.humanPlayer.board);
-            this.renderShipsPanel();
-            this.playerBoardView.clearPreview();
+        if (state === 'setup') {
+            const success = this.gameController.placeSelectedShip(row, col);
+
+            if (success) {
+                this.playerBoardView.render(this.gameController.humanPlayer.board);
+                this.renderShipsPanel();
+                this.playerBoardView.clearPreview();
+            }
+            return;
+        }
+
+        // Playing state - in local mode player2 attacks player's board
+        if (state === 'playing' && this.gameController.gameMode === 'local') {
+            // Only allow attack here if it's the computerPlayer's (player2) turn
+            if (this.gameController.currentPlayer === this.gameController.computerPlayer) {
+                try {
+                    this.gameController.handleAttack(row, col);
+                } catch (err) {
+                    this.showToast(err.message, 'error');
+                }
+            } else {
+                this.showToast('No es tu turno', 'error');
+            }
         }
     }
 
@@ -232,10 +260,22 @@ export class UIManager {
 
         if (isNaN(row) || isNaN(col)) return;
 
-        try {
-            this.gameController.handlePlayerAttack(row, col);
-        } catch (error) {
-            console.error('Error en ataque:', error);
+        const state = this.gameController.getGameState();
+
+        // If still in setup, ignore - computer board shouldn't be clickable until placement complete
+        if (state === 'setup') return;
+
+        // In playing state, human (player1) attacks computer board when it's their turn
+        if (state === 'playing') {
+            if (this.gameController.currentPlayer === this.gameController.humanPlayer) {
+                try {
+                    this.gameController.handleAttack(row, col);
+                } catch (error) {
+                    this.showToast(error.message, 'error');
+                }
+            } else {
+                this.showToast('No es tu turno', 'error');
+            }
         }
     }
 
@@ -343,6 +383,61 @@ export class UIManager {
         if (this.elements.shipsGrid?.parentElement) {
             this.elements.shipsGrid.parentElement.style.display = 'none';
         }
+
+        // Ensure turn indicator visible
+        if (this.elements.turnIndicator) {
+            this.elements.turnIndicator.style.display = 'flex';
+        }
+    }
+
+    onTurnStarted(data) {
+        const current = this.gameController.currentPlayer;
+        // Update arrow direction: default points to right for 'Jugador'
+        if (this.elements.turnArrow) {
+            if (current === this.gameController.humanPlayer) {
+                this.elements.turnArrow.classList.remove('turn-left');
+            } else {
+                this.elements.turnArrow.classList.add('turn-left');
+            }
+        }
+
+        // Update timer initial display
+        if (this.elements.turnTimer) {
+            this.elements.turnTimer.textContent = this.gameController.turnDuration || '20';
+        }
+
+        // Enable/disable boards depending on whose turn it is
+        if (current === this.gameController.humanPlayer) {
+            // Human's turn: enable attacking the enemy board
+            this.playerBoardView.disable();
+            this.computerBoardView.enable();
+        } else {
+            // Opponent's turn
+            if (this.gameController.computerPlayer.isAI) {
+                // AI's turn: disable both boards (AI will act programmatically)
+                this.computerBoardView.disable();
+                this.playerBoardView.disable();
+            } else {
+                // Local second player (human): enable attacking player's board
+                this.computerBoardView.disable();
+                this.playerBoardView.enable();
+            }
+        }
+    }
+
+    onTurnTick(data) {
+        if (this.elements.turnTimer) {
+            this.elements.turnTimer.textContent = String(data.remaining);
+        }
+    }
+
+    onTurnChanged(data) {
+        // turn changed - update UI accordingly (will also be followed by turnStarted)
+        this.showToast(`Turno: ${data.currentPlayer}`, 'success');
+    }
+
+    onTurnTimeout(data) {
+        this.showToast(`${data.player} se ha quedado sin tiempo. Turno concedido.`, 'error');
     }
 
     onCellAttacked(data) {

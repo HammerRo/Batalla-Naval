@@ -15,6 +15,8 @@ export class GameController extends EventEmitter {
         this.selectedShip = null;
         this.selectedOrientation = ORIENTATIONS.HORIZONTAL;
         this.availableShips = [];
+        this.timeoutCounts = { human: 0, computer: 0 };
+        this.turnDuration = 20; // default 20 seconds per turn
 
         this.initialize();
     }
@@ -194,8 +196,69 @@ export class GameController extends EventEmitter {
         this.placeComputerShips();
         this.gameState = GAME_STATES.PLAYING;
         this.currentPlayer = this.humanPlayer;
-
+        // Configurar si el oponente es IA según el modo
+        this.computerPlayer.isAI = this.gameMode === 'ai';
         this.emit('gameStarted', { currentPlayer: this.currentPlayer.name });
+
+        // Iniciar el reloj/turno
+        this.startTurn();
+    }
+
+    // Turn handling + timer (for local multiplayer)
+    startTurn() {
+        // Ensure any previous timer is cleared
+        this.stopTurnTimer();
+
+        // Emitir evento de inicio de turno
+        this.emit('turnStarted', { currentPlayer: this.currentPlayer.name });
+
+        // Comenzar cuenta regresiva (UI puede solicitar ticks)
+        this.turnRemaining = this.turnDuration;
+        this.emit('turnTick', { remaining: this.turnRemaining });
+        this.turnTimer = setInterval(() => {
+            this.turnRemaining -= 1;
+            if (this.turnRemaining <= 0) {
+                this.stopTurnTimer();
+                // Tiempo agotado: incrementar contador y verificar pérdida por timeouts
+                const playerKey = this.currentPlayer.isComputer ? 'computer' : 'human';
+                this.timeoutCounts[playerKey] = (this.timeoutCounts[playerKey] || 0) + 1;
+
+                // Si el jugador llegó a 2 timeouts, pierde instantáneamente
+                if (this.timeoutCounts[playerKey] >= 2) {
+                    const winner = this.currentPlayer === this.humanPlayer ? this.computerPlayer : this.humanPlayer;
+                    this.endGame(winner);
+                    return;
+                }
+
+                // Emitir timeout y cambiar turno
+                this.emit('turnTimeout', { player: this.currentPlayer.name, count: this.timeoutCounts[playerKey] });
+                this.switchTurn(true);
+                return;
+            }
+            this.emit('turnTick', { remaining: this.turnRemaining });
+        }, 1000);
+    }
+
+    stopTurnTimer() {
+        if (this.turnTimer) {
+            clearInterval(this.turnTimer);
+            this.turnTimer = null;
+        }
+    }
+
+    switchTurn(conceded = false) {
+        // Cambiar jugador actual
+        this.currentPlayer = this.currentPlayer === this.humanPlayer ? this.computerPlayer : this.humanPlayer;
+        this.emit('turnChanged', { currentPlayer: this.currentPlayer.name, conceded });
+
+        // Si el nuevo jugador es la IA y el modo es 'ai', ejecutarla
+        if (this.gameMode === 'ai' && this.currentPlayer === this.computerPlayer && this.computerPlayer.isAI) {
+            // Iniciar turno de la IA (no usar timer en IA)
+            this.executeComputerTurn();
+        } else {
+            // Iniciar timer para el nuevo turno (para local)
+            this.startTurn();
+        }
     }
 
     placeComputerShips() {
@@ -236,38 +299,63 @@ export class GameController extends EventEmitter {
         });
     }
 
-    handlePlayerAttack(row, col) {
+    /**
+     * Generalized attack handler used for both local and AI modes.
+     * The currentPlayer performs the attack against its opponent board.
+     */
+    handleAttack(row, col) {
         if (this.gameState !== GAME_STATES.PLAYING) {
             throw new Error('El juego no ha comenzado');
         }
 
         try {
-            const result = this.humanPlayer.attack(row, col);
+            const attacker = this.currentPlayer;
+            const result = attacker.attack(row, col);
 
             if (result.alreadyAttacked) {
                 this.emit('error', { message: 'Ya disparaste aquí' });
                 return result;
             }
+            // Reset timeout counter for the attacker (took action)
+            const attackerKey = attacker.isComputer ? 'computer' : 'human';
+            this.timeoutCounts[attackerKey] = 0;
 
-            this.emit('cellAttacked', { player: this.humanPlayer.name, ...result });
+            this.emit('cellAttacked', { player: attacker.name, ...result });
 
             if (result.hit) {
                 this.emit('shipHit', result);
 
                 if (result.sunk) {
-                    this.emit('shipSunk', { ship: result.ship, player: this.humanPlayer.name });
+                    this.emit('shipSunk', { ship: result.ship, player: attacker.name });
                 }
 
                 if (this.checkGameOver()) {
                     return result;
                 }
 
+                // En Batalle Naval, al acertar, el mismo jugador dispara de nuevo.
+                // Reiniciar timer para el mismo jugador (si aplica)
+                if (this.gameMode === 'local') {
+                    this.startTurn();
+                }
+
                 return result;
             }
 
-            setTimeout(() => {
-                this.executeComputerTurn();
-            }, 800);
+            // Si fue fallo, cambiar turno
+            if (this.gameMode === 'ai') {
+                // Para AI, si atacante fue humano, ejecutar turno de la IA después de delay
+                if (attacker === this.humanPlayer) {
+                    this.stopTurnTimer();
+                    setTimeout(() => this.executeComputerTurn(), 800);
+                } else {
+                    // AI falló; volver a jugador humano
+                    this.switchTurn(false);
+                }
+            } else {
+                // Local: cambiar turno y conceder al otro jugador
+                this.switchTurn(false);
+            }
 
             return result;
         } catch (error) {
@@ -280,10 +368,15 @@ export class GameController extends EventEmitter {
         if (this.gameState !== GAME_STATES.PLAYING) {
             return;
         }
-
         try {
+            // Solo ejecutar IA si está configurada como IA
+            if (!this.computerPlayer.isAI) return;
+
             const target = this.aiService.selectTarget(this.humanPlayer.board);
             const result = this.computerPlayer.attack(target.row, target.col);
+
+            // Reset timeout counter for computer (took action)
+            this.timeoutCounts['computer'] = 0;
 
             this.aiService.processAttackResult(result);
 
@@ -303,6 +396,12 @@ export class GameController extends EventEmitter {
                 setTimeout(() => {
                     this.executeComputerTurn();
                 }, 800);
+            } else {
+                // IA falló: volver al jugador humano
+                this.currentPlayer = this.humanPlayer;
+                this.emit('turnChanged', { currentPlayer: this.currentPlayer.name, conceded: false });
+                // Reiniciar timer para el humano
+                this.startTurn();
             }
         } catch (error) {
             console.error('Error en turno de computadora:', error);
@@ -326,6 +425,9 @@ export class GameController extends EventEmitter {
     endGame(winner) {
         this.gameState = GAME_STATES.GAME_OVER;
 
+        // Detener temporizador si existiera
+        this.stopTurnTimer();
+
         const stats = {
             winner: winner.name,
             playerShots: this.humanPlayer.opponentBoard.attackHistory.size,
@@ -343,7 +445,8 @@ export class GameController extends EventEmitter {
         this.currentPlayer = this.humanPlayer;
         this.selectedShip = null;
         this.selectedOrientation = ORIENTATIONS.HORIZONTAL;
-        this.initializeAvailableShips();
+        // Re-initialize players/opponent boards and available ships
+        this.initialize();
         this.emit('gameReset');
     }
 
