@@ -195,9 +195,9 @@
 
 .ships-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: calc(var(--spacing-md) / 2);
+    margin-bottom: var(--spacing-sm);
 }
 
 .ship-card {
@@ -251,11 +251,27 @@
 }
 
 .ship-card__segment {
-    width: 32px;
-    height: 32px;
+    width: 22px;
+    height: 22px;
     background: var(--color-ship);
     border: 2px solid var(--color-primary-dark);
     border-radius: var(--border-radius-sm);
+}
+
+/* During placement-side layout hide the anchor icon inside ship cells for cleaner look */
+.game-container.placement-side .board__cell--ship::after {
+    display: none;
+}
+
+/* Make ship cards more compact so they fit without scrollbar */
+.game-container.placement-side .ships-panel {
+    max-height: none;
+    overflow: visible;
+    padding: calc(var(--spacing-md));
+}
+
+.game-container.placement-side .ship-card {
+    padding: calc(var(--spacing-sm));
 }
 
 .placement-hint {

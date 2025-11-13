@@ -142,7 +142,6 @@ export class UIManager {
                 <span class="ship-card__name">${shipType.icon} ${shipType.name}</span>
                 <span class="ship-card__quantity">${shipType.remaining}/${shipType.total}</span>
             </div>
-            <div class="ship-card__size">Tamaño: ${shipType.size} celdas</div>
             <div class="ship-card__visual">
                 ${Array(shipType.size).fill('').map(() => 
                     '<div class="ship-card__segment"></div>'
