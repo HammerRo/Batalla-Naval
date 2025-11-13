@@ -12,6 +12,29 @@
     margin-bottom: var(--spacing-xl);
 }
 
+/* Back button in header */
+.btn-back {
+    position: absolute;
+    left: 20px;
+    top: 22px;
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+
+.btn-back:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+/* Ensure header has relative positioning so absolute button anchors correctly */
+.game-header {
+    position: relative;
+}
+
 .game-title {
     color: var(--color-primary);
     font-size: 2.5rem;

@@ -50,6 +50,7 @@ export class UIManager {
             playerBoard: document.querySelector('#playerBoard'),
             computerBoard: document.querySelector('#computerBoard'),
             btnStart: document.querySelector('#btnStart'),
+            btnBackToMenu: document.querySelector('#btnBackToMenu'),
             btnReset: document.querySelector('#btnReset'),
             btnRandomize: document.querySelector('#btnRandomize'),
             btnHorizontal: document.querySelector('#btnHorizontal'),
@@ -81,6 +82,7 @@ export class UIManager {
 
     attachEventListeners() {
         this.elements.btnStart?.addEventListener('click', () => this.handleStartGame());
+        this.elements.btnBackToMenu?.addEventListener('click', () => this.handleBackToMenu());
         this.elements.btnReset?.addEventListener('click', () => this.handleReset());
         this.elements.btnRandomize?.addEventListener('click', () => this.handleRandomize());
         
@@ -94,6 +96,21 @@ export class UIManager {
         this.elements.btnPlayAgain?.addEventListener('click', () => this.handlePlayAgain());
 
         document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+    }
+
+    handleBackToMenu() {
+        // Si la app principal está expuesta, llamar al método que vuelve al menú
+        try {
+            if (window.__battleshipApp && typeof window.__battleshipApp.backToMenuFromGameMode === 'function') {
+                window.__battleshipApp.backToMenuFromGameMode();
+                return;
+            }
+        } catch (err) {
+            console.warn('No se pudo usar backToMenuFromGameMode:', err);
+        }
+
+        // Fallback: recargar la página para reiniciar la app
+        window.location.reload();
     }
 
     subscribeToGameEvents() {

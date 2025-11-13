@@ -308,6 +308,8 @@ class BattleshipApp {
 document.addEventListener('DOMContentLoaded', () => {
     const app = new BattleshipApp();
     app.initialize();
+    // Exponer instancia para permitir acciones globales (ej. volver al menú desde UI)
+    window.__battleshipApp = app;
 });
 
 // Manejo de errores no capturados
