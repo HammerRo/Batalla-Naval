@@ -57,6 +57,9 @@ export class BoardView {
             CSS_CLASSES.CELL_MISS
         );
 
+        // also remove sunk class when re-rendering/updating
+        cell.classList.remove(CSS_CLASSES.CELL_SUNK);
+
         // ⭐ SI ES TABLERO ENEMIGO, NO MOSTRAR BARCOS (solo mostrar hits y miss)
         if (this.hideShips && state === CELL_STATES.SHIP) {
             // No agregar clase, dejar celda normal
@@ -151,5 +154,19 @@ export class BoardView {
     hideShipsMarkers() {
         this.hideShips = true;
         this.boardElement.classList.remove('board--reveal-ships');
+    }
+
+    // Mark all positions of a ship as sunk (visual feedback)
+    markShipSunk(ship) {
+        if (!ship || !ship.positions) return;
+
+        ship.positions.forEach(pos => {
+            const cell = this.getCell(pos.row, pos.col);
+            if (cell) {
+                // Ensure base hit class is applied then add sunk
+                cell.classList.remove(CSS_CLASSES.CELL_SHIP, CSS_CLASSES.CELL_MISS);
+                cell.classList.add(CSS_CLASSES.CELL_HIT, CSS_CLASSES.CELL_SUNK);
+            }
+        });
     }
 }

@@ -33,6 +33,7 @@ export const CSS_CLASSES = Object.freeze({
     CELL_SHIP: 'board__cell--ship',
     CELL_HIT: 'board__cell--hit',
     CELL_MISS: 'board__cell--miss',
+    CELL_SUNK: 'board__cell--sunk',
     CELL_PREVIEW: 'board__cell--preview',
     CELL_INVALID: 'board__cell--invalid',
     BOARD_DISABLED: 'board--disabled',

@@ -122,8 +122,11 @@ export class UIManager {
         this.gameController.on('allShipsPlaced', () => this.onAllShipsPlaced());
         this.gameController.on('gameStarted', (data) => this.onGameStarted(data));
         this.gameController.on('turnStarted', (data) => this.onTurnStarted(data));
+        this.gameController.on('turnChanging', (data) => this.onTurnChanging(data));
         this.gameController.on('turnTick', (data) => this.onTurnTick(data));
         this.gameController.on('turnChanged', (data) => this.onTurnChanged(data));
+        this.gameController.on('aiTurnStart', (data) => this.onAiTurnStart(data));
+        this.gameController.on('aiTurnEnd', (data) => this.onAiTurnEnd(data));
         this.gameController.on('turnTimeout', (data) => this.onTurnTimeout(data));
         this.gameController.on('cellAttacked', (data) => this.onCellAttacked(data));
         this.gameController.on('shipHit', (data) => this.onShipHit(data));
@@ -416,6 +419,37 @@ export class UIManager {
         }
     }
 
+    onTurnChanging(data) {
+        // During the short turn-change pause, disable both boards to prevent attacks
+        if (this.playerBoardView) this.playerBoardView.disable();
+        if (this.computerBoardView) this.computerBoardView.disable();
+
+        // Update status to indicate transition
+        this.updateGameStatus('Cambio de turno...');
+        if (this.elements.turnIndicator) {
+            this.elements.turnIndicator.classList.add('turn-changing');
+        }
+    }
+
+    onAiTurnStart(data) {
+        // AI is about to (or has started) attacking — ensure player's board is blocked
+        if (this.playerBoardView) this.playerBoardView.disable();
+        if (this.elements.turnIndicator) {
+            this.elements.turnIndicator.classList.add('turn-changing');
+        }
+        this.updateGameStatus('Enemigo atacando...');
+    }
+
+    onAiTurnEnd(data) {
+        // AI finished attacking — remove blocking spinner. The following events (turnChanged/turnStarted)
+        // will re-enable boards appropriately, but we'll ensure spinner is removed.
+        if (this.elements.turnIndicator) {
+            this.elements.turnIndicator.classList.remove('turn-changing');
+        }
+        // Clear status; next turnStarted will set correct status
+        this.updateGameStatus('');
+    }
+
     onTurnTick(data) {
         if (this.elements.turnTimer) {
             this.elements.turnTimer.textContent = String(data.remaining);
@@ -424,6 +458,11 @@ export class UIManager {
 
     onTurnChanged(data) {
         // turn changed - update UI accordingly (will also be followed by turnStarted)
+        // remove any temporary 'changing' visual
+        if (this.elements.turnIndicator) {
+            this.elements.turnIndicator.classList.remove('turn-changing');
+        }
+
         this.showToast(`Turno: ${data.currentPlayer}`, 'success');
     }
 
@@ -449,6 +488,18 @@ export class UIManager {
     onShipSunk(data) {
         const isPlayer = data.player === 'Jugador';
         this.showToast(`¡${data.ship.name} hundido!`, isPlayer ? 'success' : 'error');
+        // Visualizar barco hundido en el tablero correspondiente
+        if (isPlayer) {
+            // Player sank enemy ship -> mark on computer board
+            if (this.computerBoardView && data.ship) {
+                this.computerBoardView.markShipSunk(data.ship);
+            }
+        } else {
+            // Enemy sank player's ship -> mark on player board
+            if (this.playerBoardView && data.ship) {
+                this.playerBoardView.markShipSunk(data.ship);
+            }
+        }
     }
 
   onGameOver(data) {

@@ -17,6 +17,7 @@ export class GameController extends EventEmitter {
         this.availableShips = [];
         this.timeoutCounts = { human: 0, computer: 0 };
         this.turnDuration = 20; // default 20 seconds per turn
+        this.isSwitchingTurn = false; // true during the 1s transition
 
         this.initialize();
     }
@@ -247,18 +248,34 @@ export class GameController extends EventEmitter {
     }
 
     switchTurn(conceded = false) {
-        // Cambiar jugador actual
-        this.currentPlayer = this.currentPlayer === this.humanPlayer ? this.computerPlayer : this.humanPlayer;
-        this.emit('turnChanged', { currentPlayer: this.currentPlayer.name, conceded });
+        // Stop any running timer while we transition
+        this.stopTurnTimer();
 
-        // Si el nuevo jugador es la IA y el modo es 'ai', ejecutarla
-        if (this.gameMode === 'ai' && this.currentPlayer === this.computerPlayer && this.computerPlayer.isAI) {
-            // Iniciar turno de la IA (no usar timer en IA)
-            this.executeComputerTurn();
-        } else {
-            // Iniciar timer para el nuevo turno (para local)
-            this.startTurn();
-        }
+        const fromPlayer = this.currentPlayer;
+        const toPlayer = this.currentPlayer === this.humanPlayer ? this.computerPlayer : this.humanPlayer;
+
+        // Mark switching state so attacks are blocked
+        this.isSwitchingTurn = true;
+
+        // Emit an event to signal a short turn-changing phase (UI can disable inputs)
+        this.emit('turnChanging', { from: fromPlayer.name, to: toPlayer.name, conceded });
+
+        // Wait 1 second before actually switching the turn to allow UI/animation
+        setTimeout(() => {
+            // Cambiar jugador actual
+            this.currentPlayer = toPlayer;
+            this.isSwitchingTurn = false;
+            this.emit('turnChanged', { currentPlayer: this.currentPlayer.name, conceded });
+
+            // Si el nuevo jugador es la IA y el modo es 'ai', ejecutarla
+            if (this.gameMode === 'ai' && this.currentPlayer === this.computerPlayer && this.computerPlayer.isAI) {
+                // Iniciar turno de la IA (no usar timer en IA)
+                this.executeComputerTurn();
+            } else {
+                // Iniciar timer para el nuevo turno (para local)
+                this.startTurn();
+            }
+        }, 1000);
     }
 
     placeComputerShips() {
@@ -306,6 +323,11 @@ export class GameController extends EventEmitter {
     handleAttack(row, col) {
         if (this.gameState !== GAME_STATES.PLAYING) {
             throw new Error('El juego no ha comenzado');
+        }
+
+        if (this.isSwitchingTurn) {
+            // Block attacks during the short transition
+            throw new Error('Espera el cambio de turno');
         }
 
         try {
@@ -369,6 +391,8 @@ export class GameController extends EventEmitter {
             return;
         }
         try {
+            // Signal UI that AI turn/start of AI attack sequence is beginning
+            this.emit('aiTurnStart', { player: this.computerPlayer.name });
             // Solo ejecutar IA si está configurada como IA
             if (!this.computerPlayer.isAI) return;
 
@@ -390,6 +414,8 @@ export class GameController extends EventEmitter {
                 }
 
                 if (this.checkGameOver()) {
+                    // End of AI activity (game finished)
+                    this.emit('aiTurnEnd', { player: this.computerPlayer.name });
                     return;
                 }
 
@@ -398,6 +424,9 @@ export class GameController extends EventEmitter {
                 }, 800);
             } else {
                 // IA falló: volver al jugador humano
+                // End of AI activity (AI finished attacking)
+                this.emit('aiTurnEnd', { player: this.computerPlayer.name });
+
                 this.currentPlayer = this.humanPlayer;
                 this.emit('turnChanged', { currentPlayer: this.currentPlayer.name, conceded: false });
                 // Reiniciar timer para el humano
