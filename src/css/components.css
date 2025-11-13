@@ -154,7 +154,8 @@
     background: var(--color-ship);
 }
 
-.board__cell--ship::after {
+/* Ship marker is hidden by default and only shown when the board has the class 'board--reveal-ships' */
+.board--reveal-ships .board__cell--ship::after {
     content: '⚓';
 }
 
@@ -283,6 +284,7 @@
 
 /* During placement-side layout hide the anchor icon inside ship cells for cleaner look */
 .game-container.placement-side .board__cell--ship::after {
+    /* keep hidden during placement layout (visual only) */
     display: none;
 }
 
@@ -400,38 +402,15 @@
     margin: calc(var(--spacing-md) * -0.5) 0 var(--spacing-md);
 }
 
-.turn-arrow {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--color-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform: rotate(0deg);
-    transition: transform 0.25s ease, background 0.2s;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-    cursor: default;
-}
-
-.turn-arrow::after {
-    content: '➤';
-    color: white;
-    font-size: 1.4rem;
-    transform: translateX(2px);
-}
-
-.turn-arrow.turn-left {
-    transform: rotate(180deg);
-}
-
 .turn-timer {
     background: rgba(0,0,0,0.06);
-    padding: 6px 10px;
-    border-radius: 8px;
+    padding: 10px 14px;
+    border-radius: 12px;
     font-weight: 700;
-    min-width: 44px;
+    min-width: 56px;
     text-align: center;
+    font-size: 1.1rem;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
 @media (max-width: 900px) {

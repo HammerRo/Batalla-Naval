@@ -66,9 +66,8 @@ export class UIManager {
             gameHeader: document.querySelector('.game-header')
         };
 
-        // Turn indicator elements
+        // Turn indicator elements (timer only)
         this.elements.turnIndicator = document.querySelector('#turnIndicator');
-        this.elements.turnArrow = document.querySelector('#turnArrow');
         this.elements.turnTimer = document.querySelector('#turnTimer');
     }
 
@@ -384,7 +383,7 @@ export class UIManager {
             this.elements.shipsGrid.parentElement.style.display = 'none';
         }
 
-        // Ensure turn indicator visible
+        // Ensure turn indicator visible (timer shown when game realmente inicia via ¡A jugar!)
         if (this.elements.turnIndicator) {
             this.elements.turnIndicator.style.display = 'flex';
         }
@@ -392,14 +391,6 @@ export class UIManager {
 
     onTurnStarted(data) {
         const current = this.gameController.currentPlayer;
-        // Update arrow direction: default points to right for 'Jugador'
-        if (this.elements.turnArrow) {
-            if (current === this.gameController.humanPlayer) {
-                this.elements.turnArrow.classList.remove('turn-left');
-            } else {
-                this.elements.turnArrow.classList.add('turn-left');
-            }
-        }
 
         // Update timer initial display
         if (this.elements.turnTimer) {

@@ -14,6 +14,11 @@ export class BoardView {
         this.boardElement.innerHTML = '';
         this.cells = [];
 
+        // If the board should hide ships, ensure reveal class is removed
+        if (this.hideShips) {
+            this.boardElement.classList.remove('board--reveal-ships');
+        }
+
         for (let row = 0; row < GAME_CONFIG.BOARD_SIZE; row++) {
             for (let col = 0; col < GAME_CONFIG.BOARD_SIZE; col++) {
                 const cell = this.createCell(row, col, board);
@@ -129,7 +134,9 @@ export class BoardView {
     // ⭐ NUEVO: Revelar barcos al final del juego
     revealShips(board) {
         this.hideShips = false; // Permitir mostrar barcos
-        
+        // Add a reveal class to the board element so CSS will show ship markers
+        this.boardElement.classList.add('board--reveal-ships');
+
         for (let row = 0; row < GAME_CONFIG.BOARD_SIZE; row++) {
             for (let col = 0; col < GAME_CONFIG.BOARD_SIZE; col++) {
                 const state = board.getCellState(row, col);
@@ -138,5 +145,11 @@ export class BoardView {
                 }
             }
         }
+    }
+
+    // Optional: hide ships again (used when resetting)
+    hideShipsMarkers() {
+        this.hideShips = true;
+        this.boardElement.classList.remove('board--reveal-ships');
     }
 }
