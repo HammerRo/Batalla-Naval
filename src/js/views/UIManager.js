@@ -11,7 +11,33 @@ export class UIManager {
         this.attachEventListeners();
         this.subscribeToGameEvents();
         this.renderShipsPanel();
+        this.configureForMode();
         this.updateUserDisplay();
+    }
+
+    configureForMode() {
+        const mode = this.gameController?.gameMode || 'local';
+
+        if (mode === 'ai') {
+            // Ocultar inicialmente el tablero del enemigo (mostramos solo el tuyo y los barcos)
+            const computerWrapper = this.elements.computerBoard?.closest('.board-wrapper');
+            if (computerWrapper) {
+                computerWrapper.style.display = 'none';
+            }
+
+            const boardsContainer = document.querySelector('.boards-container');
+            if (boardsContainer) {
+                boardsContainer.classList.add('single-board');
+            }
+
+            // Cambiar texto del botón de inicio a '¡A jugar!' para claridad
+            if (this.elements.btnStart) {
+                this.elements.btnStart.textContent = '¡A jugar!';
+            }
+
+            // Sugerencia inicial
+            this.updatePlacementHint('Coloca tus barcos. Presiona ¡A jugar! para comenzar');
+        }
     }
 
     initializeElements() {
@@ -270,6 +296,17 @@ export class UIManager {
         this.elements.btnHorizontal.disabled = true;
         this.elements.btnVertical.disabled = true;
 
+        // Si venimos de modo AI, mostrar también el tablero del enemigo ahora
+        const computerWrapper = this.elements.computerBoard?.closest('.board-wrapper');
+        if (computerWrapper) {
+            computerWrapper.style.display = '';
+        }
+
+        const boardsContainer = document.querySelector('.boards-container');
+        if (boardsContainer) {
+            boardsContainer.classList.remove('single-board');
+        }
+
         this.computerBoardView.enable();
         this.computerBoardView.render(this.gameController.computerPlayer.board);
 
@@ -334,6 +371,17 @@ export class UIManager {
 
         if (this.elements.shipsGrid?.parentElement) {
             this.elements.shipsGrid.parentElement.style.display = 'block';
+        }
+
+        // Ajustar visibilidad del tablero enemigo según el modo de juego
+        const computerWrapper = this.elements.computerBoard?.closest('.board-wrapper');
+        const boardsContainer = document.querySelector('.boards-container');
+        if (this.gameController?.gameMode === 'ai') {
+            if (computerWrapper) computerWrapper.style.display = 'none';
+            if (boardsContainer) boardsContainer.classList.add('single-board');
+        } else {
+            if (computerWrapper) computerWrapper.style.display = '';
+            if (boardsContainer) boardsContainer.classList.remove('single-board');
         }
 
         this.showToast('Juego reiniciado', 'success');

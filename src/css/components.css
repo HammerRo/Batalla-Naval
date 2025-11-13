@@ -31,6 +31,12 @@
     margin-bottom: var(--spacing-xl);
 }
 
+.boards-container.single-board {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    align-items: start;
+}
+
 .board-wrapper {
     display: flex;
     flex-direction: column;
