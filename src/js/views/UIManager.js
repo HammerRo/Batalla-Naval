@@ -523,6 +523,12 @@ export class UIManager {
 
         this.playerBoardView.enable();
         this.playerBoardView.render(this.gameController.humanPlayer.board);
+        
+        // Ensure computer board ships are hidden again (removes board--reveal-ships class)
+        if (this.computerBoardView && typeof this.computerBoardView.hideShipsMarkers === 'function') {
+            this.computerBoardView.hideShipsMarkers();
+        }
+        
         this.computerBoardView.clear();
         this.computerBoardView.disable();
 

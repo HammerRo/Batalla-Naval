@@ -159,6 +159,28 @@
     content: '⚓';
 }
 
+/* Ensure computer board never shows ship markers by default. Only reveal when
+   the board explicitly has the 'board--reveal-ships' class. This prevents
+   accidental visibility across pages or render timing issues. */
+#computerBoard .board__cell--ship {
+    /* keep base ship background hidden on computer board */
+    background: var(--color-water);
+}
+
+#computerBoard .board__cell--ship::after {
+    display: none;
+}
+
+/* When explicitly revealing ships (end of game), allow markers on computer board */
+#computerBoard.board--reveal-ships .board__cell--ship {
+    background: var(--color-ship);
+}
+
+#computerBoard.board--reveal-ships .board__cell--ship::after {
+    display: inline-block;
+    content: '⚓';
+}
+
 .board__cell--preview {
     background: rgba(74, 144, 226, 0.5);
 }

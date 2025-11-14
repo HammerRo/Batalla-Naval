@@ -35,7 +35,13 @@ export class BoardView {
         cell.dataset.col = col;
         cell.dataset.boardType = this.boardType;
 
-        const state = board.getCellState(row, col);
+        // For computer board, never render ship state until explicitly revealed
+        let state = board.getCellState(row, col);
+        if (this.hideShips && state === CELL_STATES.SHIP) {
+            // Treat ship cells as empty during hide phase to avoid any visual
+            state = CELL_STATES.EMPTY;
+        }
+        
         this.updateCellState(cell, state);
 
         if (this.cellClickHandler) {
@@ -59,12 +65,6 @@ export class BoardView {
 
         // also remove sunk class when re-rendering/updating
         cell.classList.remove(CSS_CLASSES.CELL_SUNK);
-
-        // ⭐ SI ES TABLERO ENEMIGO, NO MOSTRAR BARCOS (solo mostrar hits y miss)
-        if (this.hideShips && state === CELL_STATES.SHIP) {
-            // No agregar clase, dejar celda normal
-            return;
-        }
 
         switch (state) {
             case CELL_STATES.SHIP:
