@@ -62,6 +62,7 @@ export class UIManager {
             modalTitle: document.querySelector('#modalTitle'),
             finalStats: document.querySelector('#finalStats'),
             btnPlayAgain: document.querySelector('#btnPlayAgain'),
+            btnBackToMenuModal: document.querySelector('#btnBackToMenuModal'),
             toastContainer: document.querySelector('#toastContainer'),
             gameHeader: document.querySelector('.game-header')
         };
@@ -98,11 +99,21 @@ export class UIManager {
         );
 
         this.elements.btnPlayAgain?.addEventListener('click', () => this.handlePlayAgain());
+        this.elements.btnBackToMenuModal?.addEventListener('click', () => this.handleBackToMenu());
 
         document.addEventListener('keydown', (e) => this.handleKeyPress(e));
     }
 
     handleBackToMenu() {
+        // Ocultar modal antes de redirigir
+        this.hideModal();
+        
+        // Finalizar el juego actual si está en progreso
+        if (this.gameController && this.gameController.getGameState() === 'playing') {
+            // Detener timer y resetear el juego
+            this.gameController.reset();
+        }
+        
         // Si la app principal está expuesta, llamar al método que vuelve al menú
         try {
             if (window.__battleshipApp && typeof window.__battleshipApp.backToMenuFromGameMode === 'function') {
@@ -113,8 +124,8 @@ export class UIManager {
             console.warn('No se pudo usar backToMenuFromGameMode:', err);
         }
 
-        // Fallback: recargar la página para reiniciar la app
-        window.location.reload();
+        // Fallback: redirigir a menu.html directamente
+        window.location.href = 'menu.html';
     }
 
     subscribeToGameEvents() {
@@ -303,8 +314,19 @@ export class UIManager {
     }
 
     handleReset() {
-        if (confirm('¿Estás seguro de que quieres reiniciar el juego?')) {
-            this.gameController.reset();
+        const state = this.gameController.getGameState();
+        
+        // Si el juego está en progreso, cambiar a "Rendirse"
+        if (state === 'playing') {
+            if (confirm('¿Estás seguro de que quieres rendirte?')) {
+                // El jugador se rinde, la computadora gana
+                this.gameController.endGame(this.gameController.computerPlayer);
+            }
+        } else {
+            // Si está en setup, actuar como reinicio normal
+            if (confirm('¿Estás seguro de que quieres reiniciar el juego?')) {
+                this.gameController.reset();
+            }
         }
     }
 
@@ -359,6 +381,12 @@ export class UIManager {
         this.elements.btnRandomize.style.display = 'none';
         this.elements.btnHorizontal.disabled = true;
         this.elements.btnVertical.disabled = true;
+        
+        // Cambiar texto del botón Reset a "Rendirse" durante el juego
+        if (this.elements.btnReset) {
+            this.elements.btnReset.textContent = 'Rendirse';
+            this.elements.btnReset.style.display = 'block';
+        }
 
         // Si venimos de modo AI, mostrar también el tablero del enemigo ahora
         const computerWrapper = this.elements.computerBoard?.closest('.board-wrapper');
@@ -522,6 +550,12 @@ export class UIManager {
         this.elements.btnRandomize.style.display = 'block';
         this.elements.btnHorizontal.disabled = false;
         this.elements.btnVertical.disabled = false;
+        
+        // Restaurar texto del botón Reset a "Reiniciar" en fase de colocación
+        if (this.elements.btnReset) {
+            this.elements.btnReset.textContent = 'Reiniciar';
+            this.elements.btnReset.style.display = 'none'; // Ocultar durante colocación
+        }
 
         this.playerBoardView.enable();
         this.playerBoardView.render(this.gameController.humanPlayer.board);
