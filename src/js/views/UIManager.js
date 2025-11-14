@@ -70,6 +70,12 @@ export class UIManager {
         // Turn indicator elements (timer only)
         this.elements.turnIndicator = document.querySelector('#turnIndicator');
         this.elements.turnTimer = document.querySelector('#turnTimer');
+
+        // Ensure Reset/Rendirse button is hidden on first load (before any game)
+        if (this.elements.btnReset) {
+            this.elements.btnReset.style.display = 'none';
+            this.elements.btnReset.textContent = 'Reiniciar';
+        }
     }
 
     initializeViews() {
