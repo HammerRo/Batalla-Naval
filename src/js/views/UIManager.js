@@ -356,6 +356,7 @@ export class UIManager {
     onGameStarted(data) {
         this.elements.btnStart.disabled = true;
         this.elements.btnRandomize.disabled = true;
+        this.elements.btnRandomize.style.display = 'none';
         this.elements.btnHorizontal.disabled = true;
         this.elements.btnVertical.disabled = true;
 
@@ -518,6 +519,7 @@ export class UIManager {
     onGameReset() {
         this.elements.btnStart.disabled = true;
         this.elements.btnRandomize.disabled = false;
+        this.elements.btnRandomize.style.display = 'block';
         this.elements.btnHorizontal.disabled = false;
         this.elements.btnVertical.disabled = false;
 
