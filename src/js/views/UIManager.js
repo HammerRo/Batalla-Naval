@@ -462,8 +462,6 @@ export class UIManager {
         if (this.elements.turnIndicator) {
             this.elements.turnIndicator.classList.remove('turn-changing');
         }
-
-        this.showToast(`Turno: ${data.currentPlayer}`, 'success');
     }
 
     onTurnTimeout(data) {
@@ -482,7 +480,7 @@ export class UIManager {
     }
 
     onShipHit(data) {
-        this.showToast(MESSAGES.GAME.HIT, 'success');
+        // suppressed toast to avoid spam during gameplay; the board shows the hit
     }
 
     onShipSunk(data) {
