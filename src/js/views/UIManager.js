@@ -830,16 +830,19 @@ export class UIManager {
     onGameOver(data) {
         const isPlayerWinner = data.winner === this.gameController.humanPlayer.name;
     
-    this.computerBoardView.disable();
-    this.playerBoardView.disable();
+        this.computerBoardView.disable();
+        this.playerBoardView.disable();
 
-    this.computerBoardView.revealShips(this.gameController.computerPlayer.board);
+        // Revelar barcos del oponente al finalizar (solo para AI; en local evitar revelar ambos)
+        if (this.gameController?.gameMode === 'ai') {
+                this.computerBoardView.revealShips(this.gameController.computerPlayer.board);
+        }
 
-    this.updateGameStatus(isPlayerWinner ? MESSAGES.GAME.YOU_WIN : MESSAGES.GAME.YOU_LOSE);
+        this.updateGameStatus(isPlayerWinner ? MESSAGES.GAME.YOU_WIN : MESSAGES.GAME.YOU_LOSE);
 
-    setTimeout(() => {
-        this.showGameOverModal(data);
-    }, 1000);
+        setTimeout(() => {
+                this.showGameOverModal(data);
+        }, 400);
 }
 
     onGameReset() {
@@ -928,19 +931,27 @@ export class UIManager {
         }
 
         if (this.elements.finalStats) {
+            const p1 = data.p1 || { name: 'Jugador 1', hits: 0, misses: 0, total: data.playerShots || 0 };
+            const p2 = data.p2 || { name: 'Jugador 2', hits: 0, misses: 0, total: data.computerShots || 0 };
             this.elements.finalStats.innerHTML = `
                 <div style="display: grid; gap: 10px;">
                     <div style="display: flex; justify-content: space-between; padding: 10px; background: #f5f5f5; border-radius: 8px;">
                         <span style="font-weight: bold;">Ganador:</span>
                         <span style="color: var(--color-primary);">${data.winner}</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #f5f5f5; border-radius: 8px;">
-                        <span style="font-weight: bold;">Tus disparos:</span>
-                        <span style="color: var(--color-primary);">${data.playerShots}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #f5f5f5; border-radius: 8px;">
-                        <span style="font-weight: bold;">Disparos enemigos:</span>
-                        <span style="color: var(--color-primary);">${data.computerShots}</span>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="padding: 10px; background: #f5f5f5; border-radius: 8px;">
+                            <div style="font-weight: bold; margin-bottom: 6px;">${p1.name}</div>
+                            <div>Aciertos: <strong>${p1.hits}</strong></div>
+                            <div>Fallos: <strong>${p1.misses}</strong></div>
+                            <div>Total: <strong>${p1.total}</strong></div>
+                        </div>
+                        <div style="padding: 10px; background: #f5f5f5; border-radius: 8px;">
+                            <div style="font-weight: bold; margin-bottom: 6px;">${p2.name}</div>
+                            <div>Aciertos: <strong>${p2.hits}</strong></div>
+                            <div>Fallos: <strong>${p2.misses}</strong></div>
+                            <div>Total: <strong>${p2.total}</strong></div>
+                        </div>
                     </div>
                 </div>
             `;

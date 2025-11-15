@@ -505,10 +505,31 @@ export class GameController extends EventEmitter {
         // Detener temporizador si existiera
         this.stopTurnTimer();
 
+        // Helper para contar aciertos y fallas sobre el tablero del oponente
+        const countAttacks = (opponentBoard) => {
+            let hits = 0, misses = 0;
+            if (opponentBoard && opponentBoard.matrix) {
+                for (let r = 0; r < opponentBoard.matrix.length; r++) {
+                    for (let c = 0; c < opponentBoard.matrix[r].length; c++) {
+                        const cell = opponentBoard.matrix[r][c];
+                        if (cell === 'hit') hits++;
+                        else if (cell === 'miss') misses++;
+                    }
+                }
+            }
+            return { hits, misses, total: hits + misses };
+        };
+
+        const p1Stats = countAttacks(this.humanPlayer.opponentBoard);
+        const p2Stats = countAttacks(this.computerPlayer.opponentBoard);
+
         const stats = {
             winner: winner.name,
-            playerShots: this.humanPlayer.opponentBoard.attackHistory.size,
-            computerShots: this.computerPlayer.opponentBoard.attackHistory.size
+            playerShots: p1Stats.total,
+            computerShots: p2Stats.total,
+            mode: this.gameMode,
+            p1: { name: this.humanPlayer.name, ...p1Stats },
+            p2: { name: this.computerPlayer.name, ...p2Stats }
         };
 
         this.emit('gameOver', stats);
