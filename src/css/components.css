@@ -117,6 +117,19 @@
 
 .board-title {
     color: var(--color-gray-800);
+    font-weight: 700;
+    font-size: 1.3rem;
+    transition: color 0.2s;
+}
+
+.board-title.turn-active {
+    color: var(--color-primary);
+    text-shadow: 0 2px 8px rgba(102,126,234,0.12);
+}
+
+.board-title.turn-inactive {
+    color: var(--color-gray-500);
+    opacity: 0.7;
 }
 
 .board {

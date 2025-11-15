@@ -13,7 +13,7 @@ export class UIManager {
         this.subscribeToGameEvents();
         this.renderShipsPanel();
         this.configureForMode();
-        this.updateUserDisplay();
+        // Usuario solo se muestra en el título del tablero
     }
 
     configureForMode() {
@@ -90,6 +90,34 @@ export class UIManager {
         this.playerBoardView.render(this.gameController.humanPlayer.board);
         this.computerBoardView.render(this.gameController.computerPlayer.board);
         this.computerBoardView.disable();
+
+        // Set initial board titles
+        this.updateBoardTitles('player');
+    }
+    // Cambia los títulos y colores según el turno
+    updateBoardTitles(currentTurn) {
+        // Obtener elementos de título
+        const playerTitle = document.querySelector('.board-wrapper:nth-child(1) .board-title');
+        const computerTitle = document.querySelector('.board-wrapper:nth-child(2) .board-title');
+
+        // Usuario actual
+        let username = 'Invitado';
+        if (this.currentUser && this.currentUser.username) {
+            username = this.currentUser.username;
+        }
+
+        // Cambiar texto del tablero del jugador
+        if (playerTitle) {
+            playerTitle.textContent = `Tablero de ${username}`;
+            playerTitle.classList.remove('turn-active', 'turn-inactive');
+            playerTitle.classList.add(currentTurn === 'player' ? 'turn-active' : 'turn-inactive');
+        }
+        // Cambiar texto del tablero enemigo
+        if (computerTitle) {
+            computerTitle.textContent = 'Tablero Enemigo';
+            computerTitle.classList.remove('turn-active', 'turn-inactive');
+            computerTitle.classList.add(currentTurn === 'computer' ? 'turn-active' : 'turn-inactive');
+        }
     }
 
     attachEventListeners() {
@@ -455,10 +483,20 @@ export class UIManager {
         if (this.elements.turnIndicator) {
             this.elements.turnIndicator.style.display = 'flex';
         }
+
+        // Inicializar títulos de tableros para el primer turno
+        this.updateBoardTitles('player');
     }
 
     onTurnStarted(data) {
         const current = this.gameController.currentPlayer;
+
+        // Actualizar títulos y colores según el turno
+        if (current === this.gameController.humanPlayer) {
+            this.updateBoardTitles('player');
+        } else {
+            this.updateBoardTitles('computer');
+        }
 
         // Update timer initial display
         if (this.elements.turnTimer) {
@@ -506,6 +544,9 @@ export class UIManager {
     }
 
     onAiTurnEnd(data) {
+
+        // Restaurar títulos y colores a estado inicial
+        this.updateBoardTitles('player');
         // AI finished attacking — remove blocking spinner. The following events (turnChanged/turnStarted)
         // will re-enable boards appropriately, but we'll ensure spinner is removed.
         if (this.elements.turnIndicator) {
@@ -712,27 +753,5 @@ export class UIManager {
 
     // User Display
 
-    updateUserDisplay() {
-        if (!this.currentUser || !this.elements.gameHeader) return;
-
-        let userDisplay = this.elements.gameHeader.querySelector('.user-display');
-        
-        if (!userDisplay) {
-            userDisplay = document.createElement('div');
-            userDisplay.className = 'user-display';
-            this.elements.gameHeader.appendChild(userDisplay);
-        }
-
-        const guestBadge = this.currentUser.isGuest ? ' 👤 (Invitado)' : '';
-        userDisplay.innerHTML = `
-            <div class="user-info">
-                <span class="user-name">👤 ${this.currentUser.username}${guestBadge}</span>
-                ${!this.currentUser.isGuest ? `
-                    <span class="user-stats">
-                        📊 V: ${this.currentUser.gamesWon}/${this.currentUser.gamesPlayed}
-                    </span>
-                ` : ''}
-            </div>
-        `;
-    }
+    // updateUserDisplay() eliminado: el usuario solo se muestra en el título del tablero
 }
