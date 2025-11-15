@@ -366,7 +366,14 @@ export class UIManager {
                     this.gameController.rotateShip(existingShip);
                     this.playerBoardView.hideShips = false;
                     this.playerBoardView.render(this.gameController.humanPlayer.board);
-                    this.showToast('Barco rotado', 'success');
+                    
+                    // Verificar si el barco se movió a una nueva posición
+                    const newPos = existingShip.positions[0];
+                    if (newPos.row !== row || newPos.col !== col) {
+                        this.showToast('Barco rotado y reubicado', 'success');
+                    } else {
+                        this.showToast('Barco rotado', 'success');
+                    }
                 } catch (err) {
                     this.showToast(err.message, 'error');
                 }
@@ -447,7 +454,14 @@ export class UIManager {
                         this.gameController.rotateShip(existingShip);
                         this.computerBoardView.hideShips = false;
                         this.computerBoardView.render(this.gameController.computerPlayer.board);
-                        this.showToast('Barco rotado', 'success');
+                        
+                        // Verificar si el barco se movió a una nueva posición
+                        const newPos = existingShip.positions[0];
+                        if (newPos.row !== row || newPos.col !== col) {
+                            this.showToast('Barco rotado y reubicado', 'success');
+                        } else {
+                            this.showToast('Barco rotado', 'success');
+                        }
                     } catch (err) {
                         this.showToast(err.message, 'error');
                     }

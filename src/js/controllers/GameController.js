@@ -271,21 +271,73 @@ export class GameController extends EventEmitter {
         const currentPos = ship.positions[0];
         if (!currentPos) throw new Error('Barco sin posiciones válidas');
 
-        // Verificar si cabe en la nueva orientación
-        if (!targetBoard.canPlaceShipExcluding(currentPos.row, currentPos.col, ship.size, newOrientation, ship)) {
-            throw new Error('No se puede rotar el barco en esta posición');
+        // Intentar rotar en la posición actual
+        if (targetBoard.canPlaceShipExcluding(currentPos.row, currentPos.col, ship.size, newOrientation, ship)) {
+            // Quitar el barco
+            targetBoard.removeShip(ship);
+
+            // Cambiar orientación y recolocar
+            ship.orientation = newOrientation;
+            ship.place(currentPos.row, currentPos.col, newOrientation);
+            targetBoard.placeShip(ship, currentPos.row, currentPos.col);
+
+            this.emit('shipRotated', { ship, movedTo: null });
+            return true;
         }
 
-        // Quitar el barco
-        targetBoard.removeShip(ship);
+        // Si no cabe, buscar posición cercana válida
+        const nearbyPosition = this.findNearbyValidRotationPosition(
+            targetBoard, currentPos.row, currentPos.col, ship.size, newOrientation, ship
+        );
 
-        // Cambiar orientación y recolocar
-        ship.orientation = newOrientation;
-        ship.place(currentPos.row, currentPos.col, newOrientation);
-        targetBoard.placeShip(ship, currentPos.row, currentPos.col);
+        if (nearbyPosition) {
+            // Quitar el barco
+            targetBoard.removeShip(ship);
 
-        this.emit('shipRotated', { ship });
-        return true;
+            // Cambiar orientación y recolocar en nueva posición
+            ship.orientation = newOrientation;
+            ship.place(nearbyPosition.row, nearbyPosition.col, newOrientation);
+            targetBoard.placeShip(ship, nearbyPosition.row, nearbyPosition.col);
+
+            this.emit('shipRotated', { ship, movedTo: nearbyPosition });
+            return true;
+        }
+
+        // No se encontró posición válida
+        throw new Error('No se puede rotar el barco: sin espacio disponible');
+    }
+
+    findNearbyValidRotationPosition(board, startRow, startCol, size, orientation, excludeShip) {
+        const BOARD_SIZE = 10;
+        const maxDistance = 3; // Buscar hasta 3 celdas de distancia
+
+        // Buscar en círculos concéntricos alrededor de la posición original
+        for (let distance = 1; distance <= maxDistance; distance++) {
+            // Revisar todas las posiciones a esta distancia
+            for (let rowOffset = -distance; rowOffset <= distance; rowOffset++) {
+                for (let colOffset = -distance; colOffset <= distance; colOffset++) {
+                    // Solo revisar el borde del cuadrado (no el interior ya revisado)
+                    if (Math.abs(rowOffset) !== distance && Math.abs(colOffset) !== distance) {
+                        continue;
+                    }
+
+                    const newRow = startRow + rowOffset;
+                    const newCol = startCol + colOffset;
+
+                    // Verificar que esté dentro del tablero
+                    if (newRow < 0 || newCol < 0 || newRow >= BOARD_SIZE || newCol >= BOARD_SIZE) {
+                        continue;
+                    }
+
+                    // Verificar si el barco cabe aquí con la nueva orientación
+                    if (board.canPlaceShipExcluding(newRow, newCol, size, orientation, excludeShip)) {
+                        return { row: newRow, col: newCol };
+                    }
+                }
+            }
+        }
+
+        return null; // No se encontró posición válida cercana
     }
 
     startGame() {
