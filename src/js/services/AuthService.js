@@ -108,17 +108,18 @@ export class AuthService {
      * @returns {Object} - Usuario invitado
      */
     loginAsGuest() {
+        // Sesión de invitado: no persistimos en localStorage ni creamos usuario real
         const guestUser = {
-            id: `guest_${Date.now()}`,
-            username: `Invitado_${Math.floor(Math.random() * 10000)}`,
+            id: 'guest',
+            username: 'Invitado',
             isGuest: true,
             gamesPlayed: 0,
             gamesWon: 0,
             averageShots: 0
         };
 
+        // Mantener sólo en memoria
         this.currentUser = guestUser;
-        this.saveCurrentUserToStorage();
 
         return {
             success: true,

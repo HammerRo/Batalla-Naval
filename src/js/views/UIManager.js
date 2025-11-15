@@ -844,6 +844,10 @@ export class UIManager {
         this.elements.btnRandomize.style.display = 'none';
         this.elements.btnHorizontal.disabled = true;
         this.elements.btnVertical.disabled = true;
+        // Ocultar botón de volver cuando la partida inicia
+        if (this.elements.btnBackToMenu) {
+            this.elements.btnBackToMenu.style.display = 'none';
+        }
         
         // Cambiar texto del botón Reset a "Rendirse" durante el juego
         if (this.elements.btnReset) {
@@ -1067,6 +1071,10 @@ export class UIManager {
         this.elements.btnRandomize.style.display = 'block';
         this.elements.btnHorizontal.disabled = false;
         this.elements.btnVertical.disabled = false;
+        // Mostrar nuevamente el botón de volver al menú en fase de colocación
+        if (this.elements.btnBackToMenu) {
+            this.elements.btnBackToMenu.style.display = 'block';
+        }
         
         // Ocultar indicador de turno y limpiar cualquier estado visual de cambio
         if (this.elements.turnIndicator) {

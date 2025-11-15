@@ -22,7 +22,8 @@ export class MenuView {
 
         // Determinar nombre de usuario
         const username = user?.username || 'Invitado';
-        const isGuest = user?.mode === 'guest' || !user?.username;
+        // Detectar correctamente modo invitado usando la bandera isGuest
+        const isGuest = user?.isGuest === true;
 
         // Generar HTML de progresión solo para usuarios registrados
         let progressionHTML = '';
