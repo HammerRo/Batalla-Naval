@@ -369,7 +369,11 @@ export class GameController extends EventEmitter {
                 // Para AI, si atacante fue humano, ejecutar turno de la IA después de delay
                 if (attacker === this.humanPlayer) {
                     this.stopTurnTimer();
-                    setTimeout(() => this.executeComputerTurn(), 800);
+                    // Bloquear y anunciar cambio hacia la IA
+                    this.isSwitchingTurn = true;
+                    this.emit('turnChanging', { from: this.humanPlayer.name, to: this.computerPlayer.name, conceded: false });
+                    // Esperar 1 segundo antes de que la IA comience a atacar
+                    setTimeout(() => this.executeComputerTurn(), 1000);
                 } else {
                     // AI falló; volver a jugador humano
                     this.switchTurn(false);
@@ -425,10 +429,14 @@ export class GameController extends EventEmitter {
             } else {
                 // IA falló: finalizar su turno y, tras una breve pausa, devolver el turno al jugador humano
                 this.emit('aiTurnEnd', { player: this.computerPlayer.name });
+                // Bloquear durante la transición y anunciar cambio hacia el jugador
+                this.isSwitchingTurn = true;
+                this.emit('turnChanging', { from: this.computerPlayer.name, to: this.humanPlayer.name, conceded: false });
 
                 // Introducir un retraso para que el usuario perciba el cambio de turno/títulos
                 setTimeout(() => {
                     this.currentPlayer = this.humanPlayer;
+                    this.isSwitchingTurn = false;
                     this.emit('turnChanged', { currentPlayer: this.currentPlayer.name, conceded: false });
                     // Reiniciar timer para el humano
                     this.startTurn();

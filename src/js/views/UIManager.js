@@ -527,6 +527,14 @@ export class UIManager {
         if (this.playerBoardView) this.playerBoardView.disable();
         if (this.computerBoardView) this.computerBoardView.disable();
 
+        // Update titles to the incoming player's turn
+        const toName = data?.to || '';
+        if (toName === this.gameController.computerPlayer.name) {
+            this.updateBoardTitles('computer');
+        } else {
+            this.updateBoardTitles('player');
+        }
+
         // Update status to indicate transition
         this.updateGameStatus('Cambio de turno...');
         if (this.elements.turnIndicator) {
