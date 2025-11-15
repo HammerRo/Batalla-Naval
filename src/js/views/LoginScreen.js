@@ -77,6 +77,10 @@ export class LoginScreen {
                     👤 Jugar como Invitado
                 </button>
 
+                <button class="btn btn--tertiary btn--large login-btn-ranking" id="btnRanking">
+                    🏆 Ver Ranking
+                </button>
+
                 <div class="login-footer">
                     <a href="#" class="login-link" id="toggleMode">
                         ¿No tienes cuenta? Regístrate
@@ -101,11 +105,13 @@ export class LoginScreen {
     attachEventListeners(container) {
         const form = container.querySelector('#authForm');
         const btnGuest = container.querySelector('#btnGuest');
+        const btnRanking = container.querySelector('#btnRanking');
         const toggleMode = container.querySelector('#toggleMode');
         const tabs = container.querySelectorAll('.login-tab');
 
         form.addEventListener('submit', (e) => this.handleFormSubmit(e, container));
         btnGuest.addEventListener('click', () => this.handleGuestLogin(container));
+        btnRanking.addEventListener('click', () => this.showRanking(container));
         toggleMode.addEventListener('click', (e) => {
             e.preventDefault();
             this.toggleMode(container);
@@ -254,5 +260,79 @@ export class LoginScreen {
      */
     isAuthenticated() {
         return this.authService.isAuthenticated();
+    }
+
+    /**
+     * Muestra el ranking de jugadores
+     */
+    showRanking(container) {
+        // Crear modal de ranking
+        const rankingModal = document.createElement('div');
+        rankingModal.className = 'modal modal--active';
+        rankingModal.id = 'rankingModal';
+
+        // Obtener ranking ordenado por nivel y puntos
+        const users = this.authService.users
+            .filter(u => u.gamesPlayed > 0)
+            .sort((a, b) => {
+                // Ordenar por nivel primero, luego por puntos
+                if (b.level !== a.level) {
+                    return (b.level || 1) - (a.level || 1);
+                }
+                return (b.points || 0) - (a.points || 0);
+            })
+            .slice(0, 10);
+
+        let rankingHTML = '';
+        users.forEach((user, index) => {
+            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+            rankingHTML += `
+                <div class="ranking-item ${index < 3 ? 'ranking-item--top' : ''}">
+                    <div class="ranking-position">${medal}</div>
+                    <div class="ranking-info">
+                        <div class="ranking-name">${user.username}</div>
+                        <div class="ranking-stats">
+                            Nivel ${user.level || 1} • ${user.points || 0} pts • ${user.gamesWon || 0}/${user.gamesPlayed || 0} victorias
+                        </div>
+                    </div>
+                    <div class="ranking-streak">
+                        ${user.winStreak > 0 ? `🔥 ${user.winStreak}` : ''}
+                    </div>
+                </div>
+            `;
+        });
+
+        if (users.length === 0) {
+            rankingHTML = '<div class="ranking-empty">No hay jugadores registrados aún</div>';
+        }
+
+        rankingModal.innerHTML = `
+            <div class="modal-content ranking-modal">
+                <div class="ranking-header">
+                    <h2 class="ranking-title">🏆 Ranking de Jugadores</h2>
+                    <button class="ranking-close" id="closeRanking">✕</button>
+                </div>
+                <div class="ranking-list">
+                    ${rankingHTML}
+                </div>
+                <div class="ranking-footer">
+                    <p class="ranking-note">Top 10 jugadores ordenados por nivel y puntuación</p>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(rankingModal);
+
+        // Event listener para cerrar
+        document.getElementById('closeRanking').addEventListener('click', () => {
+            rankingModal.remove();
+        });
+
+        // Cerrar al hacer click fuera del modal
+        rankingModal.addEventListener('click', (e) => {
+            if (e.target === rankingModal) {
+                rankingModal.remove();
+            }
+        });
     }
 }

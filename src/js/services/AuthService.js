@@ -51,7 +51,13 @@ export class AuthService {
             createdAt: new Date().toISOString(),
             gamesPlayed: 0,
             gamesWon: 0,
-            averageShots: 0
+            averageShots: 0,
+            // Sistema de puntuación y niveles
+            points: 0,
+            level: 1,
+            winStreak: 0,
+            totalVictories: 0,
+            totalDefeats: 0
         };
 
         this.users.push(newUser);
@@ -173,6 +179,24 @@ export class AuthService {
     }
 
     /**
+     * Actualiza el usuario actual (para progresión)
+     * @param {Object} userData - Datos actualizados del usuario
+     */
+    updateCurrentUser(userData) {
+        if (!this.currentUser || this.currentUser.isGuest) return;
+
+        const user = this.users.find(u => u.id === this.currentUser.id);
+        if (user) {
+            // Actualizar datos del usuario
+            Object.assign(user, userData);
+            
+            this.saveUsersToStorage();
+            this.currentUser = user;
+            this.saveCurrentUserToStorage();
+        }
+    }
+
+    /**
      * Obtiene las estadísticas del usuario actual
      * @returns {Object}
      */
@@ -267,7 +291,17 @@ export class AuthService {
     loadUsersFromStorage() {
         try {
             const data = localStorage.getItem('batalla-naval-users');
-            return data ? JSON.parse(data) : [];
+            const users = data ? JSON.parse(data) : [];
+            
+            // Migrar usuarios existentes añadiendo campos de progresión si no los tienen
+            return users.map(user => ({
+                ...user,
+                points: user.points ?? 0,
+                level: user.level ?? 1,
+                winStreak: user.winStreak ?? 0,
+                totalVictories: user.totalVictories ?? 0,
+                totalDefeats: user.totalDefeats ?? 0
+            }));
         } catch (error) {
             console.error('Error al cargar usuarios:', error);
             return [];

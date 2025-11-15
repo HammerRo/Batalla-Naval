@@ -98,7 +98,8 @@ export class UIManager {
             btnPlayAgain: document.querySelector('#btnPlayAgain'),
             btnBackToMenuModal: document.querySelector('#btnBackToMenuModal'),
             toastContainer: document.querySelector('#toastContainer'),
-            gameHeader: document.querySelector('.game-header')
+            gameHeader: document.querySelector('.game-header'),
+            progressIndicator: document.querySelector('#progressIndicator')
         };
 
         // Turn indicator elements (timer only)
@@ -110,6 +111,9 @@ export class UIManager {
             this.elements.btnReset.style.display = 'none';
             this.elements.btnReset.textContent = 'Reiniciar';
         }
+
+        // Mostrar indicador de progreso si hay un usuario registrado y estamos en modo AI
+        this.updateProgressIndicator();
     }
 
     initializeViews() {
@@ -1047,6 +1051,9 @@ export class UIManager {
             this.computerBoardView.revealShips(this.gameController.computerPlayer.board);
         }
 
+        // Actualizar indicador de progreso después del juego
+        this.updateProgressIndicator();
+
         this.updateGameStatus(isPlayerWinner ? MESSAGES.GAME.YOU_WIN : MESSAGES.GAME.YOU_LOSE);
 
         setTimeout(() => {
@@ -1150,12 +1157,53 @@ export class UIManager {
         if (this.elements.finalStats) {
             const p1 = data.p1 || { name: 'Jugador 1', hits: 0, misses: 0, total: data.playerShots || 0 };
             const p2 = data.p2 || { name: 'Jugador 2', hits: 0, misses: 0, total: data.computerShots || 0 };
-            this.elements.finalStats.innerHTML = `
+            
+            let statsHTML = `
                 <div style="display: grid; gap: 10px;">
                     <div style="display: flex; justify-content: space-between; padding: 10px; background: #f5f5f5; border-radius: 8px;">
                         <span style="font-weight: bold;">Ganador:</span>
                         <span style="color: var(--color-primary);">${data.winner}</span>
-                    </div>
+                    </div>`;
+
+            // Mostrar progresión solo en modo AI si existe
+            if (mode === 'ai' && data.progression) {
+                const prog = data.progression;
+                const isVictory = prog.pointsEarned !== undefined;
+                
+                statsHTML += `
+                    <div style="padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; margin-bottom: 10px;">
+                        <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; text-align: center;">
+                            ${isVictory ? '📈 Progresión' : '📉 Progresión'}
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.95rem;">
+                            <div style="text-align: center;">
+                                <div style="opacity: 0.9;">Puntos ${isVictory ? 'ganados' : 'perdidos'}</div>
+                                <div style="font-size: 1.4rem; font-weight: bold;">
+                                    ${isVictory ? '+' : '-'}${isVictory ? prog.pointsEarned : prog.pointsLost}
+                                </div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="opacity: 0.9;">Racha</div>
+                                <div style="font-size: 1.4rem; font-weight: bold;">
+                                    🔥 ${prog.winStreak}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.3);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>Nivel ${prog.level}</span>
+                                <span>${prog.currentLevelPoints} / ${prog.pointsForNextLevel} pts</span>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; overflow: hidden;">
+                                <div style="background: white; height: 100%; width: ${Math.floor((prog.currentLevelPoints / prog.pointsForNextLevel) * 100)}%; transition: width 0.3s;"></div>
+                            </div>
+                            ${prog.leveledUp ? '<div style="margin-top: 8px; text-align: center; font-weight: bold; font-size: 1.1rem;">🎉 ¡Subiste de nivel!</div>' : ''}
+                            ${prog.leveledDown ? '<div style="margin-top: 8px; text-align: center; font-weight: bold;">⚠️ Bajaste de nivel</div>' : ''}
+                        </div>
+                    </div>`;
+            }
+
+            statsHTML += `
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div style="padding: 10px; background: #f5f5f5; border-radius: 8px;">
                             <div style="font-weight: bold; margin-bottom: 6px;">${p1.name}</div>
@@ -1172,6 +1220,8 @@ export class UIManager {
                     </div>
                 </div>
             `;
+            
+            this.elements.finalStats.innerHTML = statsHTML;
         }
 
         this.elements.gameOverModal.classList.add(CSS_CLASSES.MODAL_ACTIVE);
@@ -1223,6 +1273,38 @@ export class UIManager {
 
         // Mostrar modal
         confirmModal.classList.add('modal--active');
+    }
+
+    updateProgressIndicator() {
+        if (!this.elements.progressIndicator) return;
+
+        const progressionService = this.gameController?.progressionService;
+        const mode = this.gameController?.gameMode;
+
+        // Solo mostrar en modo AI y si hay un servicio de progresión
+        if (mode !== 'ai' || !progressionService) {
+            this.elements.progressIndicator.style.display = 'none';
+            return;
+        }
+
+        const progress = progressionService.getProgress();
+        
+        if (!progress) {
+            this.elements.progressIndicator.style.display = 'none';
+            return;
+        }
+
+        this.elements.progressIndicator.innerHTML = `
+            <div class="progress-indicator__level">
+                <span>⭐ Nivel ${progress.level}</span>
+            </div>
+            <div class="progress-indicator__streak">
+                <span>🔥 ${progress.winStreak}</span>
+            </div>
+        `;
+        
+        this.elements.progressIndicator.style.display = 'flex';
+        this.elements.progressIndicator.title = `${progress.currentLevelPoints}/${progress.pointsForNextLevel} puntos para siguiente nivel`;
     }
 
     // Toast

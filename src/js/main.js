@@ -4,6 +4,7 @@ import { LoginScreen } from './views/LoginScreen.js';
 import { MenuController } from './controllers/MenuController.js';
 import { MenuView } from './views/MenuView.js';
 import { GameModeView } from './views/GameModeView.js';
+import { ProgressionService } from './services/ProgressionService.js';
 
 class BattleshipApp {
     constructor() {
@@ -15,6 +16,7 @@ class BattleshipApp {
         this.gameModeView = null;
         this.currentUser = null;
         this.gameMode = null; // 'ai' o 'local'
+        this.progressionService = null;
     }
 
     initialize() {
@@ -43,6 +45,16 @@ class BattleshipApp {
     onLoginSuccess(user) {
         console.log('✅ Usuario autenticado:', user.username || 'Invitado');
         this.currentUser = user;
+
+        // Inicializar servicio de progresión SOLO para usuarios registrados
+        if (!user.isGuest && this.loginScreen && this.loginScreen.authService) {
+            this.progressionService = new ProgressionService(this.loginScreen.authService);
+            console.log('📊 Servicio de progresión inicializado');
+        } else {
+            // Asegurar que no hay servicio de progresión para invitados
+            this.progressionService = null;
+            console.log('👤 Modo invitado - Sin sistema de progresión');
+        }
 
         // Remover pantalla de login
         const loginScreen = document.getElementById('loginScreen');
@@ -166,7 +178,7 @@ class BattleshipApp {
             }
 
             // Crear controlador del juego con el modo seleccionado
-            this.gameController = new GameController();
+            this.gameController = new GameController(this.progressionService);
             this.gameController.gameMode = this.gameMode; // Pasar modo de juego
             // Asegurar que la inicialización respete el modo desde el primer juego
             if (typeof this.gameController.initialize === 'function') {

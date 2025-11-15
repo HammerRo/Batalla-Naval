@@ -5,7 +5,7 @@ import { AIService } from '../services/AIService.js';
 import { GAME_STATES, SHIP_TYPES, ORIENTATIONS } from '../config/constants.js';
 
 export class GameController extends EventEmitter {
-    constructor() {
+    constructor(progressionService = null) {
         super();
         this.gameState = GAME_STATES.SETUP;
         this.humanPlayer = new Player('Jugador 1', false);
@@ -19,6 +19,7 @@ export class GameController extends EventEmitter {
         this.turnDuration = 20; // default 20 seconds per turn
         this.isSwitchingTurn = false; // true during the 1s transition
         this.localSetupPhase = null; // 1 = Jugador 1, 2 = Jugador 2, null = completado
+        this.progressionService = progressionService; // Sistema de progresión
 
         this.initialize();
     }
@@ -644,6 +645,23 @@ export class GameController extends EventEmitter {
             p1: { name: this.humanPlayer.name, ...p1Stats },
             p2: { name: this.computerPlayer.name, ...p2Stats }
         };
+
+        // Procesar progresión solo en modo AI y si hay un servicio de progresión
+        if (this.gameMode === 'ai' && this.progressionService) {
+            const humanWon = winner === this.humanPlayer;
+            
+            let progressionResult;
+            if (humanWon) {
+                progressionResult = this.progressionService.processVictory();
+            } else {
+                progressionResult = this.progressionService.processDefeat();
+            }
+
+            // Añadir información de progresión a las estadísticas
+            if (progressionResult) {
+                stats.progression = progressionResult;
+            }
+        }
 
         this.emit('gameOver', stats);
     }
