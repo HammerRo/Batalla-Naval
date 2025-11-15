@@ -5,6 +5,7 @@ export class UIManager {
     constructor(gameController, currentUser = null) {
         this.gameController = gameController;
         this.currentUser = currentUser;
+        this.handlers = {}; // referencias para poder desuscribir listeners
         
         this.initializeElements();
         this.initializeViews();
@@ -92,33 +93,43 @@ export class UIManager {
     }
 
     attachEventListeners() {
-        this.elements.btnStart?.addEventListener('click', () => this.handleStartGame());
-        this.elements.btnBackToMenu?.addEventListener('click', () => this.handleBackToMenu());
-        this.elements.btnReset?.addEventListener('click', () => this.handleReset());
-        this.elements.btnRandomize?.addEventListener('click', () => this.handleRandomize());
-        
-        this.elements.btnHorizontal?.addEventListener('click', () => 
-            this.handleOrientationChange(ORIENTATIONS.HORIZONTAL)
-        );
-        this.elements.btnVertical?.addEventListener('click', () => 
-            this.handleOrientationChange(ORIENTATIONS.VERTICAL)
-        );
+        // Crear referencias de handlers para poder removerlos después
+        this.handlers.onStartClick = () => this.handleStartGame();
+        this.handlers.onBackClick = () => this.handleBackToMenu();
+        this.handlers.onResetClick = () => this.handleReset();
+        this.handlers.onRandomizeClick = () => this.handleRandomize();
+        this.handlers.onHorizontalClick = () => this.handleOrientationChange(ORIENTATIONS.HORIZONTAL);
+        this.handlers.onVerticalClick = () => this.handleOrientationChange(ORIENTATIONS.VERTICAL);
+        this.handlers.onPlayAgainClick = () => this.handlePlayAgain();
+        this.handlers.onBackToMenuModalClick = () => this.handleBackToMenu();
+        this.handlers.onKeyDown = (e) => this.handleKeyPress(e);
 
-        this.elements.btnPlayAgain?.addEventListener('click', () => this.handlePlayAgain());
-        this.elements.btnBackToMenuModal?.addEventListener('click', () => this.handleBackToMenu());
-
-        document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+        // Adjuntar listeners
+        this.elements.btnStart?.addEventListener('click', this.handlers.onStartClick);
+        this.elements.btnBackToMenu?.addEventListener('click', this.handlers.onBackClick);
+        this.elements.btnReset?.addEventListener('click', this.handlers.onResetClick);
+        this.elements.btnRandomize?.addEventListener('click', this.handlers.onRandomizeClick);
+        this.elements.btnHorizontal?.addEventListener('click', this.handlers.onHorizontalClick);
+        this.elements.btnVertical?.addEventListener('click', this.handlers.onVerticalClick);
+        this.elements.btnPlayAgain?.addEventListener('click', this.handlers.onPlayAgainClick);
+        this.elements.btnBackToMenuModal?.addEventListener('click', this.handlers.onBackToMenuModalClick);
+        document.addEventListener('keydown', this.handlers.onKeyDown);
     }
 
     handleBackToMenu() {
         // Ocultar modal antes de redirigir
         this.hideModal();
         
-        // Finalizar el juego actual si está en progreso
-        if (this.gameController && this.gameController.getGameState() === 'playing') {
-            // Detener timer y resetear el juego
-            this.gameController.reset();
+        // Asegurar volver al estado de colocación desde cualquier estado (playing o gameover)
+        if (this.gameController) {
+            const state = this.gameController.getGameState();
+            if (state !== 'setup') {
+                this.gameController.reset();
+            }
         }
+
+        // Destruir listeners de UI para evitar duplicados cuando se inicie otro juego
+        this.destroy();
         
         // Si la app principal está expuesta, llamar al método que vuelve al menú
         try {
@@ -152,6 +163,25 @@ export class UIManager {
         this.gameController.on('gameReset', () => this.onGameReset());
         this.gameController.on('error', (data) => this.showToast(data.message, 'error'));
         this.gameController.on('shipsPlacedRandomly', () => this.onShipsPlacedRandomly());
+    }
+
+    // Limpieza de listeners ycriptores
+    destroy() {
+        // Quitar listeners del DOM
+        this.elements.btnStart?.removeEventListener('click', this.handlers.onStartClick);
+        this.elements.btnBackToMenu?.removeEventListener('click', this.handlers.onBackClick);
+        this.elements.btnReset?.removeEventListener('click', this.handlers.onResetClick);
+        this.elements.btnRandomize?.removeEventListener('click', this.handlers.onRandomizeClick);
+        this.elements.btnHorizontal?.removeEventListener('click', this.handlers.onHorizontalClick);
+        this.elements.btnVertical?.removeEventListener('click', this.handlers.onVerticalClick);
+        this.elements.btnPlayAgain?.removeEventListener('click', this.handlers.onPlayAgainClick);
+        this.elements.btnBackToMenuModal?.removeEventListener('click', this.handlers.onBackToMenuModalClick);
+        document.removeEventListener('keydown', this.handlers.onKeyDown);
+
+        // Quitar suscripciones de eventos del controlador de juego
+        if (this.gameController && this.gameController.events && typeof this.gameController.events.clear === 'function') {
+            this.gameController.events.clear();
+        }
     }
 
     renderShipsPanel() {
@@ -556,6 +586,15 @@ export class UIManager {
         this.elements.btnRandomize.style.display = 'block';
         this.elements.btnHorizontal.disabled = false;
         this.elements.btnVertical.disabled = false;
+        
+        // Ocultar indicador de turno y limpiar cualquier estado visual de cambio
+        if (this.elements.turnIndicator) {
+            this.elements.turnIndicator.style.display = 'none';
+            this.elements.turnIndicator.classList.remove('turn-changing');
+        }
+        if (this.elements.turnTimer) {
+            this.elements.turnTimer.textContent = this.gameController.turnDuration || '20';
+        }
         
         // Restaurar texto del botón Reset a "Reiniciar" en fase de colocación
         if (this.elements.btnReset) {

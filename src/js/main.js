@@ -159,6 +159,12 @@ class BattleshipApp {
                 gameModeScreen.remove();
             }
 
+            // Si ya existía una UI anterior, destruirla para evitar listeners duplicados
+            if (this.uiManager && typeof this.uiManager.destroy === 'function') {
+                this.uiManager.destroy();
+                this.uiManager = null;
+            }
+
             // Crear controlador del juego con el modo seleccionado
             this.gameController = new GameController();
             this.gameController.gameMode = this.gameMode; // Pasar modo de juego
