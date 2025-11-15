@@ -7,6 +7,15 @@ export class UIManager {
         this.currentUser = currentUser;
         this.handlers = {}; // referencias para poder desuscribir listeners
         
+        // Estado para drag & drop
+        this.dragState = {
+            isDragging: false,
+            ship: null,
+            startRow: null,
+            startCol: null,
+            mouseDownTime: null
+        };
+        
         this.initializeElements();
         this.initializeViews();
         this.attachEventListeners();
@@ -111,6 +120,17 @@ export class UIManager {
         this.playerBoardView.setCellHoverHandler((e) => this.handlePlayerBoardHover(e));
         this.computerBoardView.setCellClickHandler((e) => this.handleComputerBoardClick(e));
         this.computerBoardView.setCellHoverHandler((e) => this.handleComputerBoardHover(e));
+
+        // Añadir event listeners para drag & drop
+        this.elements.playerBoard.addEventListener('mousedown', (e) => this.handleBoardMouseDown(e, 'player'));
+        this.elements.playerBoard.addEventListener('mousemove', (e) => this.handleBoardMouseMove(e, 'player'));
+        this.elements.playerBoard.addEventListener('mouseup', (e) => this.handleBoardMouseUp(e, 'player'));
+        this.elements.playerBoard.addEventListener('mouseleave', (e) => this.handleBoardMouseLeave(e));
+        
+        this.elements.computerBoard.addEventListener('mousedown', (e) => this.handleBoardMouseDown(e, 'computer'));
+        this.elements.computerBoard.addEventListener('mousemove', (e) => this.handleBoardMouseMove(e, 'computer'));
+        this.elements.computerBoard.addEventListener('mouseup', (e) => this.handleBoardMouseUp(e, 'computer'));
+        this.elements.computerBoard.addEventListener('mouseleave', (e) => this.handleBoardMouseLeave(e));
 
         this.playerBoardView.render(this.gameController.humanPlayer.board);
         this.computerBoardView.render(this.gameController.computerPlayer.board);
@@ -336,6 +356,22 @@ export class UIManager {
             if (mode === 'local' && phase === 2) {
                 return; // En fase 2, se coloca en computerBoard
             }
+
+            // Verificar si hay un barco en esta posición
+            const existingShip = this.gameController.getShipAt(row, col);
+            
+            if (existingShip) {
+                // Intentar rotar el barco
+                try {
+                    this.gameController.rotateShip(existingShip);
+                    this.playerBoardView.hideShips = false;
+                    this.playerBoardView.render(this.gameController.humanPlayer.board);
+                    this.showToast('Barco rotado', 'success');
+                } catch (err) {
+                    this.showToast(err.message, 'error');
+                }
+                return;
+            }
             
             const success = this.gameController.placeSelectedShip(row, col);
 
@@ -402,6 +438,22 @@ export class UIManager {
         // En setup, permitir colocación solo en fase 2 de modo local
         if (state === 'setup') {
             if (mode === 'local' && phase === 2) {
+                // Verificar si hay un barco en esta posición
+                const existingShip = this.gameController.getShipAt(row, col);
+                
+                if (existingShip) {
+                    // Intentar rotar el barco
+                    try {
+                        this.gameController.rotateShip(existingShip);
+                        this.computerBoardView.hideShips = false;
+                        this.computerBoardView.render(this.gameController.computerPlayer.board);
+                        this.showToast('Barco rotado', 'success');
+                    } catch (err) {
+                        this.showToast(err.message, 'error');
+                    }
+                    return;
+                }
+                
                 const success = this.gameController.placeSelectedShip(row, col);
 
                 if (success) {
@@ -452,6 +504,136 @@ export class UIManager {
         } else if (e.type === 'mouseleave') {
             this.computerBoardView.clearPreview();
         }
+    }
+
+    handleBoardMouseDown(e, boardType) {
+        const row = parseInt(e.target.dataset.row);
+        const col = parseInt(e.target.dataset.col);
+
+        if (isNaN(row) || isNaN(col)) return;
+
+        const state = this.gameController.getGameState();
+        const phase = this.gameController?.localSetupPhase;
+        const mode = this.gameController?.gameMode;
+
+        // Solo permitir drag en fase de setup
+        if (state !== 'setup') return;
+
+        // Verificar que estamos en el tablero correcto según la fase
+        if (boardType === 'player' && mode === 'local' && phase === 2) return;
+        if (boardType === 'computer' && (mode !== 'local' || phase !== 2)) return;
+
+        // Verificar si hay un barco en esta posición
+        const ship = this.gameController.getShipAt(row, col);
+        
+        if (ship) {
+            this.dragState.ship = ship;
+            this.dragState.startRow = row;
+            this.dragState.startCol = col;
+            this.dragState.mouseDownTime = Date.now();
+            this.dragState.isDragging = false; // No es drag hasta que se mueva
+        }
+    }
+
+    handleBoardMouseMove(e, boardType) {
+        if (!this.dragState.ship) return;
+
+        const row = parseInt(e.target.dataset.row);
+        const col = parseInt(e.target.dataset.col);
+
+        if (isNaN(row) || isNaN(col)) return;
+
+        // Si nos movemos, activar drag
+        if (!this.dragState.isDragging && 
+            (row !== this.dragState.startRow || col !== this.dragState.startCol)) {
+            this.dragState.isDragging = true;
+        }
+
+        if (this.dragState.isDragging) {
+            // Mostrar preview del barco en la nueva posición
+            const ship = this.dragState.ship;
+            const targetBoard = boardType === 'player' 
+                ? this.gameController.humanPlayer.board 
+                : this.gameController.computerPlayer.board;
+            
+            const valid = targetBoard.canPlaceShipExcluding(
+                row, col, ship.size, ship.orientation, ship
+            );
+
+            const positions = [];
+            for (let i = 0; i < ship.size; i++) {
+                if (ship.orientation === ORIENTATIONS.HORIZONTAL) {
+                    positions.push({ row: row, col: col + i });
+                } else {
+                    positions.push({ row: row + i, col: col });
+                }
+            }
+
+            const boardView = boardType === 'player' ? this.playerBoardView : this.computerBoardView;
+            boardView.showShipPreview(positions, valid);
+        }
+    }
+
+    handleBoardMouseUp(e, boardType) {
+        if (!this.dragState.ship) return;
+
+        const row = parseInt(e.target.dataset.row);
+        const col = parseInt(e.target.dataset.col);
+
+        if (isNaN(row) || isNaN(col)) {
+            this.resetDragState();
+            return;
+        }
+
+        const timeDiff = Date.now() - this.dragState.mouseDownTime;
+
+        // Si es un click rápido (< 200ms) y no se movió, es un click para rotar
+        // El click ya se maneja en handlePlayerBoardClick/handleComputerBoardClick
+        if (timeDiff < 200 && !this.dragState.isDragging) {
+            this.resetDragState();
+            return;
+        }
+
+        // Si se arrastró, intentar mover el barco
+        if (this.dragState.isDragging && 
+            (row !== this.dragState.startRow || col !== this.dragState.startCol)) {
+            try {
+                this.gameController.moveShip(this.dragState.ship, row, col);
+                
+                const boardView = boardType === 'player' ? this.playerBoardView : this.computerBoardView;
+                const targetBoard = boardType === 'player' 
+                    ? this.gameController.humanPlayer.board 
+                    : this.gameController.computerPlayer.board;
+                
+                boardView.hideShips = false;
+                boardView.render(targetBoard);
+                boardView.clearPreview();
+                
+                this.showToast('Barco movido', 'success');
+            } catch (err) {
+                this.showToast(err.message, 'error');
+            }
+        }
+
+        this.resetDragState();
+    }
+
+    handleBoardMouseLeave(e) {
+        if (this.dragState.isDragging) {
+            this.playerBoardView.clearPreview();
+            this.computerBoardView.clearPreview();
+        }
+        this.resetDragState();
+    }
+
+    resetDragState() {
+        this.dragState = {
+            isDragging: false,
+            ship: null,
+            startRow: null,
+            startCol: null,
+            mouseDownTime: null
+        };
     }
 
     handleOrientationChange(orientation) {

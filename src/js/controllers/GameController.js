@@ -227,6 +227,67 @@ export class GameController extends EventEmitter {
         this.emit('player2SetupStarted');
     }
 
+    getShipAt(row, col) {
+        const targetBoard = (this.gameMode === 'local' && this.localSetupPhase === 2)
+            ? this.computerPlayer.board
+            : this.humanPlayer.board;
+        
+        return targetBoard.ships.find(ship => ship.occupiesPosition(row, col));
+    }
+
+    moveShip(ship, newRow, newCol) {
+        const targetBoard = (this.gameMode === 'local' && this.localSetupPhase === 2)
+            ? this.computerPlayer.board
+            : this.humanPlayer.board;
+
+        // Verificar si se puede colocar en la nueva posición (excluyendo el propio barco)
+        if (!targetBoard.canPlaceShipExcluding(newRow, newCol, ship.size, ship.orientation, ship)) {
+            throw new Error('No se puede mover el barco a esa posición');
+        }
+
+        // Quitar el barco de su posición actual
+        targetBoard.removeShip(ship);
+
+        // Colocarlo en la nueva posición
+        ship.place(newRow, newCol, ship.orientation);
+        targetBoard.placeShip(ship, newRow, newCol);
+
+        this.emit('shipMoved', { ship, row: newRow, col: newCol });
+        return true;
+    }
+
+    rotateShip(ship) {
+        const targetBoard = (this.gameMode === 'local' && this.localSetupPhase === 2)
+            ? this.computerPlayer.board
+            : this.humanPlayer.board;
+
+        // Determinar nueva orientación
+        const currentOrientation = ship.orientation;
+        const newOrientation = currentOrientation === ORIENTATIONS.HORIZONTAL
+            ? ORIENTATIONS.VERTICAL
+            : ORIENTATIONS.HORIZONTAL;
+
+        // Obtener posición actual del barco (primera celda)
+        const currentPos = ship.positions[0];
+        if (!currentPos) throw new Error('Barco sin posiciones válidas');
+
+        // Verificar si cabe en la nueva orientación
+        if (!targetBoard.canPlaceShipExcluding(currentPos.row, currentPos.col, ship.size, newOrientation, ship)) {
+            throw new Error('No se puede rotar el barco en esta posición');
+        }
+
+        // Quitar el barco
+        targetBoard.removeShip(ship);
+
+        // Cambiar orientación y recolocar
+        ship.orientation = newOrientation;
+        ship.place(currentPos.row, currentPos.col, newOrientation);
+        targetBoard.placeShip(ship, currentPos.row, currentPos.col);
+
+        this.emit('shipRotated', { ship });
+        return true;
+    }
+
     startGame() {
         if (this.availableShips.length > 0) {
             throw new Error('Debes colocar todos tus barcos primero');

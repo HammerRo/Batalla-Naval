@@ -34,6 +34,43 @@ export class Board {
         this.ships.push(ship);
     }
 
+    removeShip(ship) {
+        // Eliminar las celdas del barco del tablero
+        if (ship && ship.positions) {
+            ship.positions.forEach(pos => {
+                if (this.matrix[pos.row] && this.matrix[pos.row][pos.col] === CELL_STATES.SHIP) {
+                    this.matrix[pos.row][pos.col] = CELL_STATES.EMPTY;
+                }
+            });
+        }
+        // Eliminar de la lista de barcos
+        const index = this.ships.indexOf(ship);
+        if (index !== -1) {
+            this.ships.splice(index, 1);
+        }
+    }
+
+    canPlaceShipExcluding(row, col, size, orientation, excludeShip) {
+        if (!Validator.canShipFit(row, col, size, orientation)) {
+            return false;
+        }
+
+        for (let i = 0; i < size; i++) {
+            const r = orientation === 'horizontal' ? row : row + i;
+            const c = orientation === 'horizontal' ? col + i : col;
+
+            if (this.matrix[r][c] === CELL_STATES.SHIP) {
+                // Verificar si la celda ocupada pertenece al barco excluido
+                if (excludeShip && excludeShip.occupiesPosition(r, c)) {
+                    continue; // Ignorar esta colisión
+                }
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     receiveAttack(row, col) {
         if (!Validator.isValidCoordinate(row, col)) {
             throw new Error('Coordenadas inválidas');
