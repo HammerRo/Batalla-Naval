@@ -1132,11 +1132,19 @@ export class UIManager {
     showGameOverModal(data) {
         if (!this.elements.gameOverModal) return;
 
+        const mode = this.gameController?.gameMode;
         const isWinner = data.winner === this.gameController.humanPlayer.name;
         
         if (this.elements.modalTitle) {
-            this.elements.modalTitle.textContent = isWinner ? '🎉 ¡Victoria!' : '💀 Derrota';
-            this.elements.modalTitle.style.color = isWinner ? 'var(--color-success)' : 'var(--color-danger)';
+            // En modo local, siempre mostrar "Victoria" porque ambos jugadores comparten la pantalla
+            if (mode === 'local') {
+                this.elements.modalTitle.textContent = '🎉 ¡Victoria!';
+                this.elements.modalTitle.style.color = 'var(--color-success)';
+            } else {
+                // En modo AI, mostrar Victoria o Derrota según el resultado
+                this.elements.modalTitle.textContent = isWinner ? '🎉 ¡Victoria!' : '💀 Derrota';
+                this.elements.modalTitle.style.color = isWinner ? 'var(--color-success)' : 'var(--color-danger)';
+            }
         }
 
         if (this.elements.finalStats) {
