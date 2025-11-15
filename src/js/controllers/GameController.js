@@ -8,8 +8,8 @@ export class GameController extends EventEmitter {
     constructor() {
         super();
         this.gameState = GAME_STATES.SETUP;
-        this.humanPlayer = new Player('Jugador', false);
-        this.computerPlayer = new Player('Computadora', true);
+        this.humanPlayer = new Player('Jugador 1', false);
+        this.computerPlayer = new Player('Jugador 2', true);
         this.aiService = new AIService();
         this.currentPlayer = this.humanPlayer;
         this.selectedShip = null;
@@ -18,6 +18,7 @@ export class GameController extends EventEmitter {
         this.timeoutCounts = { human: 0, computer: 0 };
         this.turnDuration = 20; // default 20 seconds per turn
         this.isSwitchingTurn = false; // true during the 1s transition
+        this.localSetupPhase = null; // 1 = Jugador 1, 2 = Jugador 2, null = completado
 
         this.initialize();
     }
@@ -25,6 +26,9 @@ export class GameController extends EventEmitter {
     initialize() {
         this.humanPlayer.setOpponentBoard(this.computerPlayer.board);
         this.computerPlayer.setOpponentBoard(this.humanPlayer.board);
+        if (this.gameMode === 'local') {
+            this.localSetupPhase = 1;
+        }
         this.initializeAvailableShips();
     }
 
@@ -95,7 +99,12 @@ export class GameController extends EventEmitter {
         try {
             this.selectedShip.orientation = this.selectedOrientation;
             this.selectedShip.place(row, col, this.selectedOrientation);
-            this.humanPlayer.board.placeShip(this.selectedShip, row, col);
+            
+            const targetBoard = (this.gameMode === 'local' && this.localSetupPhase === 2)
+                ? this.computerPlayer.board
+                : this.humanPlayer.board;
+            
+            targetBoard.placeShip(this.selectedShip, row, col);
 
             const index = this.availableShips.indexOf(this.selectedShip);
             if (index !== -1) {
@@ -106,7 +115,7 @@ export class GameController extends EventEmitter {
             this.selectedShip = null;
 
             if (this.availableShips.length === 0) {
-                this.emit('allShipsPlaced');
+                this.emit('allShipsPlaced', { phase: this.localSetupPhase });
             }
 
             return true;
@@ -117,7 +126,10 @@ export class GameController extends EventEmitter {
     }
 
     canPlaceShip(row, col, size, orientation) {
-        return this.humanPlayer.board.canPlaceShip(row, col, size, orientation);
+        const targetBoard = (this.gameMode === 'local' && this.localSetupPhase === 2)
+            ? this.computerPlayer.board
+            : this.humanPlayer.board;
+        return targetBoard.canPlaceShip(row, col, size, orientation);
     }
 
     getShipPlacementPreview(row, col) {
@@ -128,7 +140,11 @@ export class GameController extends EventEmitter {
         const ship = this.selectedShip;
         ship.orientation = this.selectedOrientation;
 
-        const valid = this.humanPlayer.board.canPlaceShip(
+        const targetBoard = (this.gameMode === 'local' && this.localSetupPhase === 2)
+            ? this.computerPlayer.board
+            : this.humanPlayer.board;
+
+        const valid = targetBoard.canPlaceShip(
             row,
             col,
             ship.size,
@@ -152,7 +168,11 @@ export class GameController extends EventEmitter {
     }
 
     placeShipsRandomly() {
-        this.humanPlayer.board.reset();
+        const targetBoard = (this.gameMode === 'local' && this.localSetupPhase === 2)
+            ? this.computerPlayer.board
+            : this.humanPlayer.board;
+        
+        targetBoard.reset();
         this.initializeAvailableShips();
 
         const shipsToPlace = [...this.availableShips];
@@ -166,7 +186,7 @@ export class GameController extends EventEmitter {
                     : ORIENTATIONS.VERTICAL;
 
                 const position = this.aiService.generateRandomShipPlacement(
-                    this.humanPlayer.board,
+                    targetBoard,
                     ship.size,
                     orientation
                 );
@@ -175,7 +195,7 @@ export class GameController extends EventEmitter {
                     try {
                         ship.orientation = orientation;
                         ship.place(position.row, position.col, orientation);
-                        this.humanPlayer.board.placeShip(ship, position.row, position.col);
+                        targetBoard.placeShip(ship, position.row, position.col);
                         placed = true;
                     } catch (error) {
                         // Intentar de nuevo
@@ -185,8 +205,17 @@ export class GameController extends EventEmitter {
         });
 
         this.availableShips = [];
-        this.emit('allShipsPlaced');
+        this.emit('allShipsPlaced', { phase: this.localSetupPhase });
         this.emit('shipsPlacedRandomly');
+    }
+
+    startPlayer2Setup() {
+        if (this.gameMode !== 'local' || this.localSetupPhase !== 1) {
+            throw new Error('Solo disponible en modo local tras fase 1');
+        }
+        this.localSetupPhase = 2;
+        this.initializeAvailableShips();
+        this.emit('player2SetupStarted');
     }
 
     startGame() {
@@ -194,14 +223,19 @@ export class GameController extends EventEmitter {
             throw new Error('Debes colocar todos tus barcos primero');
         }
 
-        this.placeComputerShips();
+        if (this.gameMode === 'ai') {
+            this.placeComputerShips();
+        }
+        
+        if (this.gameMode === 'local') {
+            this.localSetupPhase = null;
+        }
+        
         this.gameState = GAME_STATES.PLAYING;
         this.currentPlayer = this.humanPlayer;
-        // Configurar si el oponente es IA según el modo
         this.computerPlayer.isAI = this.gameMode === 'ai';
         this.emit('gameStarted', { currentPlayer: this.currentPlayer.name });
 
-        // Iniciar el reloj/turno
         this.startTurn();
     }
 

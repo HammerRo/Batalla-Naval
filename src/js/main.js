@@ -168,6 +168,10 @@ class BattleshipApp {
             // Crear controlador del juego con el modo seleccionado
             this.gameController = new GameController();
             this.gameController.gameMode = this.gameMode; // Pasar modo de juego
+            // Asegurar que la inicialización respete el modo desde el primer juego
+            if (typeof this.gameController.initialize === 'function') {
+                this.gameController.initialize();
+            }
             
             console.log('✅ GameController creado');
 

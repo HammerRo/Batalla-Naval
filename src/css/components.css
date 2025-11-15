@@ -197,7 +197,7 @@
    the board explicitly has the 'board--reveal-ships' class. This prevents
    accidental visibility across pages or render timing issues. */
 #computerBoard .board__cell--ship {
-    /* keep base ship background hidden on computer board */
+    /* Por defecto ocultamos el color del barco del tablero enemigo */
     background: var(--color-water);
 }
 
@@ -207,6 +207,11 @@
 
 /* When explicitly revealing ships (end of game), allow markers on computer board */
 #computerBoard.board--reveal-ships .board__cell--ship {
+    background: var(--color-ship);
+}
+
+/* Local multiplayer: durante la fase de colocación del Jugador 2 mostrar barcos igual que Jugador 1 */
+#computerBoard.board--local-placement .board__cell--ship {
     background: var(--color-ship);
 }
 

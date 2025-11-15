@@ -17,7 +17,7 @@ export class UIManager {
     }
 
     configureForMode() {
-        const mode = this.gameController?.gameMode || 'local';
+        const mode = this.gameController?.gameMode; // no default to avoid misconfig on first load
 
         if (mode === 'ai') {
             // Ocultar inicialmente el tablero del enemigo (mostramos solo el tuyo y los barcos)
@@ -39,6 +39,30 @@ export class UIManager {
             // Sugerencia inicial
             this.updatePlacementHint('Coloca tus barcos. Presiona ¡A jugar! para comenzar');
             // Ajustar layout del contenedor principal para mostrar panel a la derecha
+            const appContainer = document.querySelector('.game-container');
+            if (appContainer) {
+                appContainer.classList.add('placement-side');
+            }
+        } else if (mode === 'local') {
+            // Ocultar tablero del oponente durante colocación
+            const computerWrapper = this.elements.computerBoard?.closest('.board-wrapper');
+            if (computerWrapper) {
+                computerWrapper.style.display = 'none';
+            }
+
+            const boardsContainer = document.querySelector('.boards-container');
+            if (boardsContainer) {
+                boardsContainer.classList.add('single-board');
+            }
+
+            // Cambiar texto del botón de inicio a 'Siguiente'
+            if (this.elements.btnStart) {
+                this.elements.btnStart.textContent = 'Siguiente';
+            }
+
+            // Sugerencia inicial para Jugador 1
+            this.updatePlacementHint('Jugador 1: Coloca tus barcos');
+            
             const appContainer = document.querySelector('.game-container');
             if (appContainer) {
                 appContainer.classList.add('placement-side');
@@ -86,6 +110,7 @@ export class UIManager {
         this.playerBoardView.setCellClickHandler((e) => this.handlePlayerBoardClick(e));
         this.playerBoardView.setCellHoverHandler((e) => this.handlePlayerBoardHover(e));
         this.computerBoardView.setCellClickHandler((e) => this.handleComputerBoardClick(e));
+        this.computerBoardView.setCellHoverHandler((e) => this.handleComputerBoardHover(e));
 
         this.playerBoardView.render(this.gameController.humanPlayer.board);
         this.computerBoardView.render(this.gameController.computerPlayer.board);
@@ -100,23 +125,37 @@ export class UIManager {
         const playerTitle = document.querySelector('.board-wrapper:nth-child(1) .board-title');
         const computerTitle = document.querySelector('.board-wrapper:nth-child(2) .board-title');
 
-        // Usuario actual
-        let username = 'Invitado';
-        if (this.currentUser && this.currentUser.username) {
-            username = this.currentUser.username;
-        }
+        const mode = this.gameController?.gameMode || 'local';
 
-        // Cambiar texto del tablero del jugador
-        if (playerTitle) {
-            playerTitle.textContent = `Tablero de ${username}`;
-            playerTitle.classList.remove('turn-active', 'turn-inactive');
-            playerTitle.classList.add(currentTurn === 'player' ? 'turn-active' : 'turn-inactive');
-        }
-        // Cambiar texto del tablero enemigo
-        if (computerTitle) {
-            computerTitle.textContent = 'Tablero Enemigo';
-            computerTitle.classList.remove('turn-active', 'turn-inactive');
-            computerTitle.classList.add(currentTurn === 'computer' ? 'turn-active' : 'turn-inactive');
+        if (mode === 'local') {
+            // Modo local: títulos son "Jugador 1" y "Jugador 2"
+            if (playerTitle) {
+                playerTitle.textContent = 'Jugador 1';
+                playerTitle.classList.remove('turn-active', 'turn-inactive');
+                playerTitle.classList.add(currentTurn === 'player' ? 'turn-active' : 'turn-inactive');
+            }
+            if (computerTitle) {
+                computerTitle.textContent = 'Jugador 2';
+                computerTitle.classList.remove('turn-active', 'turn-inactive');
+                computerTitle.classList.add(currentTurn === 'computer' ? 'turn-active' : 'turn-inactive');
+            }
+        } else {
+            // Modo AI: mostrar nombre de usuario
+            let username = 'Invitado';
+            if (this.currentUser && this.currentUser.username) {
+                username = this.currentUser.username;
+            }
+
+            if (playerTitle) {
+                playerTitle.textContent = `Tablero de ${username}`;
+                playerTitle.classList.remove('turn-active', 'turn-inactive');
+                playerTitle.classList.add(currentTurn === 'player' ? 'turn-active' : 'turn-inactive');
+            }
+            if (computerTitle) {
+                computerTitle.textContent = 'Tablero Enemigo';
+                computerTitle.classList.remove('turn-active', 'turn-inactive');
+                computerTitle.classList.add(currentTurn === 'computer' ? 'turn-active' : 'turn-inactive');
+            }
         }
     }
 
@@ -175,7 +214,8 @@ export class UIManager {
 
     subscribeToGameEvents() {
         this.gameController.on('shipPlaced', (data) => this.onShipPlaced(data));
-        this.gameController.on('allShipsPlaced', () => this.onAllShipsPlaced());
+        this.gameController.on('allShipsPlaced', (data) => this.onAllShipsPlaced(data));
+        this.gameController.on('player2SetupStarted', () => this.onPlayer2SetupStarted());
         this.gameController.on('gameStarted', (data) => this.onGameStarted(data));
         this.gameController.on('turnStarted', (data) => this.onTurnStarted(data));
         this.gameController.on('turnChanging', (data) => this.onTurnChanging(data));
@@ -288,11 +328,20 @@ export class UIManager {
         if (isNaN(row) || isNaN(col)) return;
 
         const state = this.gameController.getGameState();
+        const phase = this.gameController?.localSetupPhase;
+        const mode = this.gameController?.gameMode;
 
         if (state === 'setup') {
+            // Solo permitir colocación en playerBoard si NO estamos en fase 2 de modo local
+            if (mode === 'local' && phase === 2) {
+                return; // En fase 2, se coloca en computerBoard
+            }
+            
             const success = this.gameController.placeSelectedShip(row, col);
 
             if (success) {
+                // Asegurar visibilidad de barcos durante colocación del Jugador 1
+                this.playerBoardView.hideShips = false;
                 this.playerBoardView.render(this.gameController.humanPlayer.board);
                 this.renderShipsPanel();
                 this.playerBoardView.clearPreview();
@@ -301,7 +350,7 @@ export class UIManager {
         }
 
         // Playing state - in local mode player2 attacks player's board
-        if (state === 'playing' && this.gameController.gameMode === 'local') {
+        if (state === 'playing' && mode === 'local') {
             // Only allow attack here if it's the computerPlayer's (player2) turn
             if (this.gameController.currentPlayer === this.gameController.computerPlayer) {
                 try {
@@ -321,6 +370,15 @@ export class UIManager {
 
         if (isNaN(row) || isNaN(col)) return;
 
+        const state = this.gameController.getGameState();
+        const phase = this.gameController?.localSetupPhase;
+        const mode = this.gameController?.gameMode;
+        
+        // Solo mostrar preview si estamos en setup y NO en fase 2 de modo local
+        if (state !== 'setup' || (mode === 'local' && phase === 2)) {
+            return;
+        }
+
         if (e.type === 'mouseenter') {
             const preview = this.gameController.getShipPlacementPreview(row, col);
             if (preview.positions.length > 0) {
@@ -338,9 +396,24 @@ export class UIManager {
         if (isNaN(row) || isNaN(col)) return;
 
         const state = this.gameController.getGameState();
+        const phase = this.gameController?.localSetupPhase;
+        const mode = this.gameController?.gameMode;
 
-        // If still in setup, ignore - computer board shouldn't be clickable until placement complete
-        if (state === 'setup') return;
+        // En setup, permitir colocación solo en fase 2 de modo local
+        if (state === 'setup') {
+            if (mode === 'local' && phase === 2) {
+                const success = this.gameController.placeSelectedShip(row, col);
+
+                if (success) {
+                    // Asegurar visibilidad de barcos durante colocación del Jugador 2
+                    this.computerBoardView.hideShips = false;
+                    this.computerBoardView.render(this.gameController.computerPlayer.board);
+                    this.renderShipsPanel();
+                    this.computerBoardView.clearPreview();
+                }
+            }
+            return;
+        }
 
         // In playing state, human (player1) attacks computer board when it's their turn
         if (state === 'playing') {
@@ -353,6 +426,31 @@ export class UIManager {
             } else {
                 this.showToast('No es tu turno', 'error');
             }
+        }
+    }
+
+    handleComputerBoardHover(e) {
+        const row = parseInt(e.target.dataset.row);
+        const col = parseInt(e.target.dataset.col);
+
+        if (isNaN(row) || isNaN(col)) return;
+
+        const state = this.gameController.getGameState();
+        const phase = this.gameController?.localSetupPhase;
+        const mode = this.gameController?.gameMode;
+        
+        // Solo mostrar preview si estamos en setup Y en fase 2 de modo local
+        if (state !== 'setup' || mode !== 'local' || phase !== 2) {
+            return;
+        }
+
+        if (e.type === 'mouseenter') {
+            const preview = this.gameController.getShipPlacementPreview(row, col);
+            if (preview.positions.length > 0) {
+                this.computerBoardView.showShipPreview(preview.positions, preview.valid);
+            }
+        } else if (e.type === 'mouseleave') {
+            this.computerBoardView.clearPreview();
         }
     }
 
@@ -371,7 +469,16 @@ export class UIManager {
 
     handleStartGame() {
         try {
-            this.gameController.startGame();
+            const mode = this.gameController?.gameMode;
+            const phase = this.gameController?.localSetupPhase;
+            
+            if (mode === 'local' && phase === 1) {
+                // Transición a fase 2
+                this.gameController.startPlayer2Setup();
+            } else {
+                // Iniciar juego normalmente
+                this.gameController.startGame();
+            }
         } catch (error) {
             this.showToast(error.message, 'error');
         }
@@ -427,16 +534,91 @@ export class UIManager {
         this.showToast(MESSAGES.SETUP.SHIP_PLACED, 'success');
     }
 
-    onAllShipsPlaced() {
-        this.showToast(MESSAGES.SETUP.ALL_PLACED, 'success');
-        this.updatePlacementHint('¡Listo! Presiona Iniciar Juego');
-        this.elements.btnStart.disabled = false;
+    onAllShipsPlaced(data) {
+        const phase = data?.phase;
+        const mode = this.gameController?.gameMode;
+        
+        if (mode === 'local' && phase === 1) {
+            this.showToast('¡Barcos del Jugador 1 listos!', 'success');
+            this.updatePlacementHint('Presiona Siguiente para que el Jugador 2 coloque sus barcos');
+            this.elements.btnStart.disabled = false;
+            this.elements.btnStart.textContent = 'Siguiente';
+        } else if (mode === 'local' && phase === 2) {
+            this.showToast('¡Barcos del Jugador 2 listos!', 'success');
+            this.updatePlacementHint('¡Listo! Presiona Iniciar Juego');
+            this.elements.btnStart.disabled = false;
+            this.elements.btnStart.textContent = 'Iniciar Juego';
+        } else {
+            this.showToast(MESSAGES.SETUP.ALL_PLACED, 'success');
+            this.updatePlacementHint('¡Listo! Presiona Iniciar Juego');
+            this.elements.btnStart.disabled = false;
+        }
     }
 
     onShipsPlacedRandomly() {
-        this.playerBoardView.render(this.gameController.humanPlayer.board);
+        const phase = this.gameController?.localSetupPhase;
+        const mode = this.gameController?.gameMode;
+        
+        if (mode === 'local' && phase === 2) {
+            // Renderizar tablero del jugador 2
+            this.computerBoardView.hideShips = false; // visible en colocación
+            this.computerBoardView.render(this.gameController.computerPlayer.board);
+        } else {
+            // Renderizar tablero del jugador 1 (modo AI o fase 1)
+            this.playerBoardView.hideShips = false; // visible en colocación
+            this.playerBoardView.render(this.gameController.humanPlayer.board);
+        }
+        
         this.renderShipsPanel();
         this.showToast('Barcos colocados aleatoriamente', 'success');
+    }
+
+    onPlayer2SetupStarted() {
+        // Ocultar tablero del jugador 1 y mostrar el del jugador 2
+        const playerWrapper = this.elements.playerBoard?.closest('.board-wrapper');
+        const computerWrapper = this.elements.computerBoard?.closest('.board-wrapper');
+        
+        if (playerWrapper) {
+            playerWrapper.style.display = 'none';
+        }
+        if (computerWrapper) {
+            computerWrapper.style.display = '';
+        }
+        
+        // Limpiar y renderizar tablero del jugador 2
+        // Asegurar que los barcos se vean durante la colocación del Jugador 2
+        this.computerBoardView.hideShips = false;
+        // Agregar clase especial para permitir color de barcos (#computerBoard.board--local-placement)
+        if (this.elements.computerBoard) {
+            this.elements.computerBoard.classList.add('board--local-placement');
+            // Remover cualquier clase de revelado final si existiera
+            this.elements.computerBoard.classList.remove('board--reveal-ships');
+        }
+        this.computerBoardView.clearPreview();
+        this.computerBoardView.render(this.gameController.computerPlayer.board);
+        this.computerBoardView.enable();
+        
+        // Habilitar botones de colocación para Jugador 2
+        if (this.elements.btnRandomize) {
+            this.elements.btnRandomize.disabled = false;
+            this.elements.btnRandomize.style.display = 'block';
+        }
+        if (this.elements.btnHorizontal) {
+            this.elements.btnHorizontal.disabled = false;
+        }
+        if (this.elements.btnVertical) {
+            this.elements.btnVertical.disabled = false;
+        }
+        
+        // Re-renderizar panel de barcos para Jugador 2
+        this.renderShipsPanel();
+        
+        // Actualizar hint y deshabilitar botón hasta que coloque barcos
+        this.updatePlacementHint('Jugador 2: Coloca tus barcos');
+        this.elements.btnStart.disabled = true;
+        this.elements.btnStart.textContent = 'Iniciar Juego';
+        
+        this.showToast('Turno del Jugador 2', 'success');
     }
 
     onGameStarted(data) {
@@ -452,8 +634,12 @@ export class UIManager {
             this.elements.btnReset.style.display = 'block';
         }
 
-        // Si venimos de modo AI, mostrar también el tablero del enemigo ahora
+        // Mostrar ambos tableros
+        const playerWrapper = this.elements.playerBoard?.closest('.board-wrapper');
         const computerWrapper = this.elements.computerBoard?.closest('.board-wrapper');
+        if (playerWrapper) {
+            playerWrapper.style.display = '';
+        }
         if (computerWrapper) {
             computerWrapper.style.display = '';
         }
@@ -470,7 +656,23 @@ export class UIManager {
         }
 
         this.computerBoardView.enable();
-        this.computerBoardView.render(this.gameController.computerPlayer.board);
+        
+        // En modo local, ocultar barcos en ambos tableros y re-renderizar ambos
+        const mode = this.gameController?.gameMode;
+        if (mode === 'local') {
+            this.playerBoardView.hideShipsMarkers();
+            this.computerBoardView.hideShipsMarkers();
+            // Re-render para aplicar ocultamiento inmediatamente
+            this.playerBoardView.render(this.gameController.humanPlayer.board);
+            this.computerBoardView.render(this.gameController.computerPlayer.board);
+            // Eliminar la clase de colocación local para ocultar barcos del Jugador 2
+            if (this.elements.computerBoard) {
+                this.elements.computerBoard.classList.remove('board--local-placement');
+            }
+        } else {
+            // Modo IA conserva comportamiento previo
+            this.computerBoardView.render(this.gameController.computerPlayer.board);
+        }
 
         this.updateGameStatus(MESSAGES.GAME.YOUR_TURN);
         this.showToast('¡Juego iniciado!', 'success');
@@ -584,7 +786,8 @@ export class UIManager {
     }
 
     onCellAttacked(data) {
-        const isHuman = data.player === 'Jugador';
+        // Determine attacker by comparing with the actual human player's name
+        const isHuman = data.player === this.gameController.humanPlayer.name;
         const boardView = isHuman ? this.computerBoardView : this.playerBoardView;
 
         if (data.hit) {
@@ -599,7 +802,7 @@ export class UIManager {
     }
 
     onShipSunk(data) {
-        const isPlayer = data.player === 'Jugador';
+        const isPlayer = data.player === this.gameController.humanPlayer.name;
         this.showToast(`¡${data.ship.name} hundido!`, isPlayer ? 'success' : 'error');
         // Visualizar barco hundido en el tablero correspondiente
         if (isPlayer) {
@@ -615,8 +818,8 @@ export class UIManager {
         }
     }
 
-  onGameOver(data) {
-    const isPlayerWinner = data.winner === 'Jugador';
+    onGameOver(data) {
+        const isPlayerWinner = data.winner === this.gameController.humanPlayer.name;
     
     this.computerBoardView.disable();
     this.playerBoardView.disable();
@@ -655,9 +858,13 @@ export class UIManager {
         this.playerBoardView.enable();
         this.playerBoardView.render(this.gameController.humanPlayer.board);
         
-        // Ensure computer board ships are hidden again (removes board--reveal-ships class)
+        // Restaurar estado de ocultamiento tablero enemigo y quitar clase local-placement
         if (this.computerBoardView && typeof this.computerBoardView.hideShipsMarkers === 'function') {
             this.computerBoardView.hideShipsMarkers();
+        }
+        if (this.elements.computerBoard) {
+            this.elements.computerBoard.classList.remove('board--local-placement');
+            this.elements.computerBoard.classList.remove('board--reveal-ships');
         }
         
         this.computerBoardView.clear();
@@ -675,17 +882,12 @@ export class UIManager {
         // Ajustar visibilidad del tablero enemigo según el modo de juego
         const computerWrapper = this.elements.computerBoard?.closest('.board-wrapper');
         const boardsContainer = document.querySelector('.boards-container');
-        if (this.gameController?.gameMode === 'ai') {
-            if (computerWrapper) computerWrapper.style.display = 'none';
-            if (boardsContainer) boardsContainer.classList.add('single-board');
-            const appContainer = document.querySelector('.game-container');
-            if (appContainer) appContainer.classList.add('placement-side');
-        } else {
-            if (computerWrapper) computerWrapper.style.display = '';
-            if (boardsContainer) boardsContainer.classList.remove('single-board');
-            const appContainer = document.querySelector('.game-container');
-            if (appContainer) appContainer.classList.remove('placement-side');
-        }
+        const appContainer = document.querySelector('.game-container');
+        // En fase de colocación (tras reiniciar), tanto en AI como en Local
+        // se debe mostrar solo un tablero (el del jugador actual que coloca)
+        if (computerWrapper) computerWrapper.style.display = 'none';
+        if (boardsContainer) boardsContainer.classList.add('single-board');
+        if (appContainer) appContainer.classList.add('placement-side');
 
         this.showToast('Juego reiniciado', 'success');
     }
@@ -709,7 +911,7 @@ export class UIManager {
     showGameOverModal(data) {
         if (!this.elements.gameOverModal) return;
 
-        const isWinner = data.winner === 'Jugador';
+        const isWinner = data.winner === this.gameController.humanPlayer.name;
         
         if (this.elements.modalTitle) {
             this.elements.modalTitle.textContent = isWinner ? '🎉 ¡Victoria!' : '💀 Derrota';
