@@ -685,24 +685,32 @@ export class UIManager {
         
         // Si el juego está en progreso, cambiar a "Rendirse"
         if (state === 'playing') {
-            if (confirm('¿Estás seguro de que quieres rendirte?')) {
-                // El jugador actual se rinde
-                if (this.gameController.gameMode === 'local') {
-                    // En local, gana el contrario al jugador actual
-                    const winner = this.gameController.currentPlayer === this.gameController.humanPlayer
-                        ? this.gameController.computerPlayer
-                        : this.gameController.humanPlayer;
-                    this.gameController.endGame(winner);
-                } else {
-                    // En modo AI, gana la computadora
-                    this.gameController.endGame(this.gameController.computerPlayer);
+            this.showConfirmModal(
+                '¿Estás seguro de que quieres rendirte?',
+                'Esta acción no se puede deshacer y perderás la partida.',
+                () => {
+                    // El jugador actual se rinde
+                    if (this.gameController.gameMode === 'local') {
+                        // En local, gana el contrario al jugador actual
+                        const winner = this.gameController.currentPlayer === this.gameController.humanPlayer
+                            ? this.gameController.computerPlayer
+                            : this.gameController.humanPlayer;
+                        this.gameController.endGame(winner);
+                    } else {
+                        // En modo AI, gana la computadora
+                        this.gameController.endGame(this.gameController.computerPlayer);
+                    }
                 }
-            }
+            );
         } else {
             // Si está en setup, actuar como reinicio normal
-            if (confirm('¿Estás seguro de que quieres reiniciar el juego?')) {
-                this.gameController.reset();
-            }
+            this.showConfirmModal(
+                '¿Estás seguro de que quieres reiniciar el juego?',
+                'Perderás toda la configuración actual.',
+                () => {
+                    this.gameController.reset();
+                }
+            );
         }
     }
 
@@ -1165,6 +1173,48 @@ export class UIManager {
         if (this.elements.gameOverModal) {
             this.elements.gameOverModal.classList.remove(CSS_CLASSES.MODAL_ACTIVE);
         }
+    }
+
+    showConfirmModal(title, message, onConfirm) {
+        // Crear modal si no existe
+        let confirmModal = document.getElementById('confirmModal');
+        if (!confirmModal) {
+            confirmModal = document.createElement('div');
+            confirmModal.id = 'confirmModal';
+            confirmModal.className = 'modal';
+            confirmModal.innerHTML = `
+                <div class="modal-content confirm-modal">
+                    <div class="confirm-icon">⚠️</div>
+                    <h2 id="confirmTitle" class="confirm-title"></h2>
+                    <p id="confirmMessage" class="confirm-message"></p>
+                    <div class="confirm-buttons">
+                        <button id="confirmCancel" class="btn btn-secondary">Cancelar</button>
+                        <button id="confirmAccept" class="btn btn-danger">Aceptar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmModal);
+
+            // Event listeners para los botones
+            document.getElementById('confirmCancel').addEventListener('click', () => {
+                confirmModal.classList.remove('modal--active');
+            });
+
+            document.getElementById('confirmAccept').addEventListener('click', () => {
+                confirmModal.classList.remove('modal--active');
+                if (confirmModal.confirmCallback) {
+                    confirmModal.confirmCallback();
+                }
+            });
+        }
+
+        // Actualizar contenido
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmMessage').textContent = message;
+        confirmModal.confirmCallback = onConfirm;
+
+        // Mostrar modal
+        confirmModal.classList.add('modal--active');
     }
 
     // Toast
