@@ -70,6 +70,16 @@ class BattleshipApp {
         console.log('📋 Mostrando menú principal...');
         
         try {
+            // Refrescar datos del usuario desde AuthService para reflejar
+            // inmediatamente la progresión actualizada después de una partida
+            const auth = this.loginScreen?.authService;
+            if (auth && typeof auth.getCurrentUser === 'function') {
+                const refreshed = auth.getCurrentUser();
+                if (refreshed) {
+                    this.currentUser = refreshed;
+                }
+            }
+
             // Crear controlador del menú
             this.menuController = new MenuController();
 
