@@ -24,6 +24,43 @@ export class MenuView {
         const username = user?.username || 'Invitado';
         const isGuest = user?.mode === 'guest' || !user?.username;
 
+        // Generar HTML de progresión solo para usuarios registrados
+        let progressionHTML = '';
+        if (!isGuest && user) {
+            const level = user.level || 1;
+            const points = user.points || 0;
+            const victories = user.totalVictories || 0;
+            const streak = user.winStreak || 0;
+            
+            // Calcular progreso del nivel actual
+            const getPointsForLevel = (lvl) => Math.floor(10 * lvl * Math.pow(1.5, lvl - 1));
+            let pointsUsed = 0;
+            for (let i = 1; i < level; i++) {
+                pointsUsed += getPointsForLevel(i);
+            }
+            const currentLevelPoints = points - pointsUsed;
+            const pointsForNextLevel = getPointsForLevel(level);
+            const progressPercentage = Math.floor((currentLevelPoints / pointsForNextLevel) * 100);
+
+            progressionHTML = `
+                <div class="user-progression">
+                    <div class="progression-item">
+                        <span class="progression-label">⭐ Nivel ${level}</span>
+                    </div>
+                    <div class="progression-bar-container">
+                        <div class="progression-bar">
+                            <div class="progression-bar-fill" style="width: ${progressPercentage}%"></div>
+                        </div>
+                        <span class="progression-points">${currentLevelPoints}/${pointsForNextLevel} pts</span>
+                    </div>
+                    <div class="progression-stats">
+                        <span class="progression-stat">🏆 ${victories}</span>
+                        <span class="progression-stat">🔥 ${streak}</span>
+                    </div>
+                </div>
+            `;
+        }
+
         this.container.innerHTML = `
             <div class="menu-container">
                 <!-- Header con usuario -->
@@ -33,6 +70,7 @@ export class MenuView {
                         <span class="user-badge ${isGuest ? 'user-badge--guest' : 'user-badge--logged'}">
                             ${isGuest ? '👤 Modo Invitado' : `👤 ${username}`}
                         </span>
+                        ${progressionHTML}
                     </div>
                 </div>
 

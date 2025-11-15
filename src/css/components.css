@@ -78,6 +78,42 @@
     gap: 4px;
 }
 
+.progress-indicator__bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.progress-bar-mini {
+    width: 60px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-mini-fill {
+    height: 100%;
+    background: white;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.progress-bar-text {
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.progress-indicator__victories {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .progress-indicator__streak {
     display: flex;
     align-items: center;
@@ -92,6 +128,8 @@
         transform: none;
         margin: 10px auto 0;
         width: fit-content;
+        flex-wrap: wrap;
+        justify-content: center;
     }
 }
 

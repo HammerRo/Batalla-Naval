@@ -271,32 +271,59 @@ export class LoginScreen {
         rankingModal.className = 'modal modal--active';
         rankingModal.id = 'rankingModal';
 
-        // Obtener ranking ordenado por nivel y puntos
+        // Obtener ranking ordenado por nivel, puntos, victorias y racha
         const users = this.authService.users
             .filter(u => u.gamesPlayed > 0)
             .sort((a, b) => {
-                // Ordenar por nivel primero, luego por puntos
-                if (b.level !== a.level) {
+                // 1. Ordenar por nivel primero
+                if ((b.level || 1) !== (a.level || 1)) {
                     return (b.level || 1) - (a.level || 1);
                 }
-                return (b.points || 0) - (a.points || 0);
+                // 2. Si tienen el mismo nivel, ordenar por puntos
+                if ((b.points || 0) !== (a.points || 0)) {
+                    return (b.points || 0) - (a.points || 0);
+                }
+                // 3. Si tienen los mismos puntos, ordenar por victorias
+                if ((b.totalVictories || 0) !== (a.totalVictories || 0)) {
+                    return (b.totalVictories || 0) - (a.totalVictories || 0);
+                }
+                // 4. Si tienen las mismas victorias, ordenar por racha
+                return (b.winStreak || 0) - (a.winStreak || 0);
             })
             .slice(0, 10);
 
         let rankingHTML = '';
         users.forEach((user, index) => {
             const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+            
+            // Calcular progreso del nivel
+            const level = user.level || 1;
+            const points = user.points || 0;
+            const getPointsForLevel = (lvl) => Math.floor(10 * lvl * Math.pow(1.5, lvl - 1));
+            let pointsUsed = 0;
+            for (let i = 1; i < level; i++) {
+                pointsUsed += getPointsForLevel(i);
+            }
+            const currentLevelPoints = points - pointsUsed;
+            const pointsForNextLevel = getPointsForLevel(level);
+            const progressPercentage = Math.floor((currentLevelPoints / pointsForNextLevel) * 100);
+            
             rankingHTML += `
                 <div class="ranking-item ${index < 3 ? 'ranking-item--top' : ''}">
                     <div class="ranking-position">${medal}</div>
                     <div class="ranking-info">
                         <div class="ranking-name">${user.username}</div>
-                        <div class="ranking-stats">
-                            Nivel ${user.level || 1} • ${user.points || 0} pts • ${user.gamesWon || 0}/${user.gamesPlayed || 0} victorias
+                        <div class="ranking-progress">
+                            <div class="ranking-level">⭐ Nivel ${level}</div>
+                            <div class="ranking-bar">
+                                <div class="ranking-bar-fill" style="width: ${progressPercentage}%"></div>
+                            </div>
+                            <div class="ranking-bar-text">${currentLevelPoints}/${pointsForNextLevel} pts</div>
                         </div>
-                    </div>
-                    <div class="ranking-streak">
-                        ${user.winStreak > 0 ? `🔥 ${user.winStreak}` : ''}
+                        <div class="ranking-stats-row">
+                            <span class="ranking-stat">🏆 ${user.totalVictories || 0}</span>
+                            <span class="ranking-stat">🔥 ${user.winStreak || 0}</span>
+                        </div>
                     </div>
                 </div>
             `;

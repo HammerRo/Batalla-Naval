@@ -1298,13 +1298,21 @@ export class UIManager {
             <div class="progress-indicator__level">
                 <span>⭐ Nivel ${progress.level}</span>
             </div>
+            <div class="progress-indicator__bar">
+                <div class="progress-bar-mini">
+                    <div class="progress-bar-mini-fill" style="width: ${progress.progressPercentage}%"></div>
+                </div>
+                <span class="progress-bar-text">${progress.currentLevelPoints}/${progress.pointsForNextLevel}</span>
+            </div>
+            <div class="progress-indicator__victories">
+                <span>🏆 ${progress.totalVictories}</span>
+            </div>
             <div class="progress-indicator__streak">
                 <span>🔥 ${progress.winStreak}</span>
             </div>
         `;
         
         this.elements.progressIndicator.style.display = 'flex';
-        this.elements.progressIndicator.title = `${progress.currentLevelPoints}/${progress.pointsForNextLevel} puntos para siguiente nivel`;
     }
 
     // Toast
