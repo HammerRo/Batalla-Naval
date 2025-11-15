@@ -827,23 +827,28 @@ export class UIManager {
         }
     }
 
-    onGameOver(data) {
+      onGameOver(data) {
         const isPlayerWinner = data.winner === this.gameController.humanPlayer.name;
     
         this.computerBoardView.disable();
         this.playerBoardView.disable();
 
-        // Revelar barcos del oponente al finalizar (solo para AI; en local evitar revelar ambos)
+        // Revelar barcos al finalizar
         if (this.gameController?.gameMode === 'ai') {
-                this.computerBoardView.revealShips(this.gameController.computerPlayer.board);
+            // En AI, revelar sólo los barcos del enemigo
+            this.computerBoardView.revealShips(this.gameController.computerPlayer.board);
+        } else {
+            // En local, revelar ambos tableros
+            this.playerBoardView.revealShips(this.gameController.humanPlayer.board);
+            this.computerBoardView.revealShips(this.gameController.computerPlayer.board);
         }
 
         this.updateGameStatus(isPlayerWinner ? MESSAGES.GAME.YOU_WIN : MESSAGES.GAME.YOU_LOSE);
 
         setTimeout(() => {
-                this.showGameOverModal(data);
+            this.showGameOverModal(data);
         }, 400);
-}
+    }
 
     onGameReset() {
         this.elements.btnStart.disabled = true;
