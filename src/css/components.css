@@ -1,3 +1,22 @@
+.board-banner {
+    width: 100%;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: 12px 0 8px 0;
+    border-radius: 12px 12px 0 0;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, color 0.2s;
+}
+.board-banner--blue {
+    background: var(--color-primary);
+    color: #fff;
+}
+.board-banner--red {
+    background: #d32f2f;
+    color: #fff;
+}
 .game-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -116,20 +135,22 @@
 }
 
 .board-title {
-    color: var(--color-gray-800);
+    color: #000;
     font-weight: 700;
     font-size: 1.3rem;
-    transition: color 0.2s;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: background 0.3s, color 0.3s;
 }
 
 .board-title.turn-active {
-    color: var(--color-primary);
-    text-shadow: 0 2px 8px rgba(102,126,234,0.12);
+    background: var(--color-primary);
+    color: #fff;
 }
 
 .board-title.turn-inactive {
-    color: var(--color-gray-500);
-    opacity: 0.7;
+    background: transparent;
+    color: #000;
 }
 
 .board {
@@ -144,7 +165,7 @@
 
 .board--disabled {
     pointer-events: none;
-    opacity: 0.7;
+    opacity: 1;
 }
 
 .board__cell {

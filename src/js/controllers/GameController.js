@@ -423,14 +423,16 @@ export class GameController extends EventEmitter {
                     this.executeComputerTurn();
                 }, 800);
             } else {
-                // IA falló: volver al jugador humano
-                // End of AI activity (AI finished attacking)
+                // IA falló: finalizar su turno y, tras una breve pausa, devolver el turno al jugador humano
                 this.emit('aiTurnEnd', { player: this.computerPlayer.name });
 
-                this.currentPlayer = this.humanPlayer;
-                this.emit('turnChanged', { currentPlayer: this.currentPlayer.name, conceded: false });
-                // Reiniciar timer para el humano
-                this.startTurn();
+                // Introducir un retraso para que el usuario perciba el cambio de turno/títulos
+                setTimeout(() => {
+                    this.currentPlayer = this.humanPlayer;
+                    this.emit('turnChanged', { currentPlayer: this.currentPlayer.name, conceded: false });
+                    // Reiniciar timer para el humano
+                    this.startTurn();
+                }, 2000);
             }
         } catch (error) {
             console.error('Error en turno de computadora:', error);

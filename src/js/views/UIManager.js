@@ -541,12 +541,11 @@ export class UIManager {
             this.elements.turnIndicator.classList.add('turn-changing');
         }
         this.updateGameStatus('Enemigo atacando...');
+        // Actualizar títulos para mostrar que es turno de la computadora
+        this.updateBoardTitles('computer');
     }
 
     onAiTurnEnd(data) {
-
-        // Restaurar títulos y colores a estado inicial
-        this.updateBoardTitles('player');
         // AI finished attacking — remove blocking spinner. The following events (turnChanged/turnStarted)
         // will re-enable boards appropriately, but we'll ensure spinner is removed.
         if (this.elements.turnIndicator) {
@@ -554,6 +553,8 @@ export class UIManager {
         }
         // Clear status; next turnStarted will set correct status
         this.updateGameStatus('');
+        // Restaurar títulos y colores a turno del jugador
+        this.updateBoardTitles('player');
     }
 
     onTurnTick(data) {
