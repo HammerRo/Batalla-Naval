@@ -490,8 +490,17 @@ export class UIManager {
         // Si el juego está en progreso, cambiar a "Rendirse"
         if (state === 'playing') {
             if (confirm('¿Estás seguro de que quieres rendirte?')) {
-                // El jugador se rinde, la computadora gana
-                this.gameController.endGame(this.gameController.computerPlayer);
+                // El jugador actual se rinde
+                if (this.gameController.gameMode === 'local') {
+                    // En local, gana el contrario al jugador actual
+                    const winner = this.gameController.currentPlayer === this.gameController.humanPlayer
+                        ? this.gameController.computerPlayer
+                        : this.gameController.humanPlayer;
+                    this.gameController.endGame(winner);
+                } else {
+                    // En modo AI, gana la computadora
+                    this.gameController.endGame(this.gameController.computerPlayer);
+                }
             }
         } else {
             // Si está en setup, actuar como reinicio normal

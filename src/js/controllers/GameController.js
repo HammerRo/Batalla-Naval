@@ -26,7 +26,16 @@ export class GameController extends EventEmitter {
     initialize() {
         this.humanPlayer.setOpponentBoard(this.computerPlayer.board);
         this.computerPlayer.setOpponentBoard(this.humanPlayer.board);
-        if (this.gameMode === 'local') {
+        // Configurar nombres y fase según el modo de juego
+        if (this.gameMode === 'ai') {
+            this.humanPlayer.name = 'Jugador';
+            this.computerPlayer.name = 'Computadora';
+            this.computerPlayer.isAI = true;
+            this.localSetupPhase = null;
+        } else if (this.gameMode === 'local') {
+            this.humanPlayer.name = 'Jugador 1';
+            this.computerPlayer.name = 'Jugador 2';
+            this.computerPlayer.isAI = false;
             this.localSetupPhase = 1;
         }
         this.initializeAvailableShips();
@@ -294,7 +303,8 @@ export class GameController extends EventEmitter {
         // Emit an event to signal a short turn-changing phase (UI can disable inputs)
         this.emit('turnChanging', { from: fromPlayer.name, to: toPlayer.name, conceded });
 
-        // Wait 1 second before actually switching the turn to allow UI/animation
+        // Delay only for AI mode to allow a short visual transition
+        const delayMs = this.gameMode === 'local' ? 0 : 1000;
         setTimeout(() => {
             // Cambiar jugador actual
             this.currentPlayer = toPlayer;
@@ -309,7 +319,7 @@ export class GameController extends EventEmitter {
                 // Iniciar timer para el nuevo turno (para local)
                 this.startTurn();
             }
-        }, 1000);
+        }, delayMs);
     }
 
     placeComputerShips() {
