@@ -755,6 +755,7 @@ export class UIManager {
     }
 
     handlePlayAgain() {
+        this.audioService?.playSFX('confirm');
         this.hideModal();
         this.gameController.reset();
     }
@@ -1311,10 +1312,12 @@ export class UIManager {
 
             // Event listeners para los botones
             document.getElementById('confirmCancel').addEventListener('click', () => {
+                this.audioService?.playSFX('confirm');
                 confirmModal.classList.remove('modal--active');
             });
 
             document.getElementById('confirmAccept').addEventListener('click', () => {
+                this.audioService?.playSFX('confirm');
                 confirmModal.classList.remove('modal--active');
                 if (confirmModal.confirmCallback) {
                     confirmModal.confirmCallback();
