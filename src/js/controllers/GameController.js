@@ -20,6 +20,7 @@ export class GameController extends EventEmitter {
         this.isSwitchingTurn = false; // true during the 1s transition
         this.localSetupPhase = null; // 1 = Jugador 1, 2 = Jugador 2, null = completado
         this.progressionService = progressionService; // Sistema de progresión
+        this.aiDifficulty = 'normal'; // Dificultad de la IA (easy, normal, hard)
 
         this.initialize();
     }
@@ -29,6 +30,7 @@ export class GameController extends EventEmitter {
      * @param {string} difficulty - 'easy', 'normal', 'hard'
      */
     setAIDifficulty(difficulty) {
+        this.aiDifficulty = difficulty;
         this.aiService.setDifficulty(difficulty);
         console.log(`🎯 Dificultad de IA establecida en: ${difficulty}`);
     }
@@ -661,7 +663,7 @@ export class GameController extends EventEmitter {
             
             let progressionResult;
             if (humanWon) {
-                progressionResult = this.progressionService.processVictory();
+                progressionResult = this.progressionService.processVictory(this.aiDifficulty);
             } else {
                 progressionResult = this.progressionService.processDefeat();
             }

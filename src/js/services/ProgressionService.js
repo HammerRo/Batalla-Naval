@@ -41,17 +41,26 @@ export class ProgressionService {
     }
 
     /**
-     * Calcula los puntos ganados por victoria según la racha
+     * Calcula los puntos ganados por victoria según la dificultad
+     * @param {string} difficulty - 'easy', 'normal', 'hard'
+     * @returns {number} Puntos ganados
      */
-    calculateVictoryPoints(winStreak) {
-        // Primera victoria: +2, segunda: +3, tercera: +4, etc.
-        return 2 + winStreak;
+    calculateVictoryPoints(difficulty = 'normal') {
+        // Puntos base según dificultad
+        const difficultyPoints = {
+            'easy': 1,
+            'normal': 2,
+            'hard': 3
+        };
+        
+        return difficultyPoints[difficulty] || 2;
     }
 
     /**
      * Procesa una victoria contra la IA
+     * @param {string} difficulty - 'easy', 'normal', 'hard'
      */
-    processVictory() {
+    processVictory(difficulty = 'normal') {
         const user = this.authService.getCurrentUser();
         
         // Solo usuarios registrados ganan puntos
@@ -59,8 +68,8 @@ export class ProgressionService {
             return null;
         }
 
-        // Calcular puntos ganados según racha
-        const pointsEarned = this.calculateVictoryPoints(user.winStreak || 0);
+        // Calcular puntos ganados según dificultad
+        const pointsEarned = this.calculateVictoryPoints(difficulty);
         
         // Actualizar estadísticas
         user.points = (user.points || 0) + pointsEarned;
@@ -79,6 +88,7 @@ export class ProgressionService {
 
         return {
             pointsEarned,
+            difficulty,
             totalPoints: user.points,
             winStreak: user.winStreak,
             level: user.level,
