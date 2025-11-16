@@ -215,6 +215,9 @@ export class UIManager {
     }
 
     handleBackToMenu() {
+        // Reproducir sonido de confirmación
+        this.audioService?.playSFX('confirm');
+        
         // Ocultar modal antes de redirigir
         this.hideModal();
         

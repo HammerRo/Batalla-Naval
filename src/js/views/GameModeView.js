@@ -104,7 +104,7 @@ export class GameModeView {
         };
 
         this._handleBackClick = () => {
-            this.audioService?.playSFX('back');
+            this.audioService?.playSFX('confirm');
             console.log('🔙 Volviendo al menú...');
             this.menuController.emit('back-to-menu');
         };
