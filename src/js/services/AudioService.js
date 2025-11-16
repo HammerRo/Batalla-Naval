@@ -11,9 +11,9 @@ export class AudioService {
             game: ['bgm/game_theme.mp3', 'bgm/game_theme.ogg']
         };
         this.sfxFiles = {
-            click: ['sfx/click.wav', 'sfx/click.mp3', 'sfx/click.ogg'],
-            confirm: ['sfx/confirm.wav', 'sfx/confirm.mp3', 'sfx/confirm.ogg'],
-            cancel: ['sfx/cancel.wav', 'sfx/cancel.mp3', 'sfx/cancel.ogg'],
+            click: ['sfx/click.mp3'],
+            confirm: ['sfx/confirm.mp3'],
+            cancel: ['sfx/cancel.mp3'],
             place_ship: ['sfx/place_ship.mp3'],
             rotate_ship: ['sfx/rotate_ship.mp3'],
             hit: ['sfx/hit.mp3'],
