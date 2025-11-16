@@ -5,8 +5,9 @@
  */
 
 export class MenuView {
-    constructor(menuController) {
+    constructor(menuController, audioService = null) {
         this.menuController = menuController;
+        this.audioService = audioService;
         this.container = null;
     }
 
@@ -134,6 +135,7 @@ export class MenuView {
         // Click en botón Juego
         if (btnGame) {
             btnGame.addEventListener('click', () => {
+                this.audioService?.playSFX('click');
                 console.log('🎮 Click en Juego');
                 this.menuController.startGame();
             });
@@ -142,6 +144,7 @@ export class MenuView {
         // Click en botón Configuración
         if (btnSettings) {
             btnSettings.addEventListener('click', () => {
+                this.audioService?.playSFX('click');
                 console.log('⚙️ Click en Configuración');
                 this.menuController.navigateTo('settings');
             });
@@ -150,6 +153,7 @@ export class MenuView {
         // Click en botón Ayuda
         if (btnHelp) {
             btnHelp.addEventListener('click', () => {
+                this.audioService?.playSFX('click');
                 console.log('❓ Click en Ayuda');
                 this.menuController.navigateTo('help');
             });
@@ -158,6 +162,7 @@ export class MenuView {
         // Click en botón Cerrar Sesión
         if (btnLogout) {
             btnLogout.addEventListener('click', () => {
+                this.audioService?.playSFX('cancel');
                 console.log('👋 Click en Cerrar Sesión');
                 this.menuController.logout();
             });

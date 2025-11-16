@@ -5,6 +5,8 @@ import { MenuController } from './controllers/MenuController.js';
 import { MenuView } from './views/MenuView.js';
 import { GameModeView } from './views/GameModeView.js';
 import { ProgressionService } from './services/ProgressionService.js';
+import { SettingsService } from './services/SettingsService.js';
+import { AudioService } from './services/AudioService.js';
 
 class BattleshipApp {
     constructor() {
@@ -17,6 +19,8 @@ class BattleshipApp {
         this.currentUser = null;
         this.gameMode = null; // 'ai' o 'local'
         this.progressionService = null;
+        this.settingsService = null;
+        this.audioService = null;
     }
 
     initialize() {
@@ -24,6 +28,9 @@ class BattleshipApp {
             console.log('🚢 Inicializando Batalla Naval...');
 
             // Mostrar pantalla de login
+            this.settingsService = new SettingsService();
+            this.audioService = new AudioService(this.settingsService);
+            this.audioService.init();
             this.showLoginScreen();
 
         } catch (error) {
@@ -84,11 +91,14 @@ class BattleshipApp {
             this.menuController = new MenuController();
 
             // Crear vista del menú
-            this.menuView = new MenuView(this.menuController);
+            this.menuView = new MenuView(this.menuController, this.audioService);
             const menuElement = this.menuView.render(this.currentUser);
 
             // Agregar menú al DOM
             document.body.appendChild(menuElement);
+
+            // Música de menú
+            this.audioService?.playBGM('menu');
 
             // Conectar eventos del menú
             this.menuController.on('start-game', () => this.showGameModeSelection());
@@ -203,8 +213,10 @@ class BattleshipApp {
             }
 
             // Crear gestor de UI con modo de juego
-            this.uiManager = new UIManager(this.gameController, this.currentUser);
+            this.uiManager = new UIManager(this.gameController, this.currentUser, this.audioService);
             console.log('✅ UIManager creado');
+            // Música de juego
+            this.audioService?.playBGM('game');
 
             console.log('✅ Juego inicializado correctamente');
             console.log(`📊 Modo de juego: ${this.gameMode === 'ai' ? '🤖 Contra la Máquina' : '👥 Contra un Amigo'}`);
@@ -247,9 +259,83 @@ class BattleshipApp {
      */
     showSettings() {
         console.log('⚙️ Mostrando configuración...');
-        // TODO: Implementar pantalla de configuración para RF02
-        alert('Configuración - Próximamente disponible');
-        this.menuController.backToMenu();
+        const s = this.settingsService?.getSettings() || { language: 'es', bgmVolume: 0.6, sfxVolume: 0.8 };
+        const modal = document.createElement('div');
+        modal.className = 'modal modal--active';
+        modal.id = 'settingsModal';
+
+        const percent = (v) => Math.round((v ?? 0) * 100);
+
+        modal.innerHTML = `
+            <div class="modal-content help-modal" style="max-width:720px;">
+                <div class="help-hero">
+                    <h2 class="help-hero__title">⚙️ Configuración</h2>
+                    <p class="help-hero__subtitle">Idioma y sonido</p>
+                </div>
+                <div class="help-body">
+                    <div class="help-grid" style="margin-bottom:12px;">
+                        <section class="help-card">
+                            <h3 class="help-card__title">🌐 Idioma</h3>
+                            <label style="display:block; font-weight:600; margin-bottom:6px;">Selecciona idioma</label>
+                            <select id="selLang" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                                <option value="es" ${s.language === 'es' ? 'selected' : ''}>Español</option>
+                                <option value="en" ${s.language === 'en' ? 'selected' : ''}>English</option>
+                            </select>
+                            <p style="margin:8px 0 0; color:#666; font-size:0.9rem;">Algunos textos pueden actualizarse al volver al menú.</p>
+                        </section>
+                        <section class="help-card help-card--accent">
+                            <h3 class="help-card__title">🔊 Volumen</h3>
+                            <div style="display:grid; gap:10px;">
+                                <div>
+                                    <label style="font-weight:600;">Música de fondo</label>
+                                    <input type="range" id="rngBgm" min="0" max="100" value="${percent(s.bgmVolume)}"/>
+                                    <span id="lblBgm">${percent(s.bgmVolume)}%</span>
+                                </div>
+                                <div>
+                                    <label style="font-weight:600;">Efectos</label>
+                                    <input type="range" id="rngSfx" min="0" max="100" value="${percent(s.sfxVolume)}"/>
+                                    <span id="lblSfx">${percent(s.sfxVolume)}%</span>
+                                    <button class="btn btn--secondary" id="btnTestSfx" style="margin-left:10px; padding:6px 12px;">Probar</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+                <div class="help-footer">
+                    <button class="btn btn--secondary" id="btnCancelSettings">Cancelar</button>
+                    <button class="btn btn--primary" id="btnSaveSettings">Guardar</button>
+                </div>
+            </div>`;
+
+        document.body.appendChild(modal);
+
+        const close = () => modal.remove();
+        const selLang = modal.querySelector('#selLang');
+        const rngBgm = modal.querySelector('#rngBgm');
+        const rngSfx = modal.querySelector('#rngSfx');
+        const lblBgm = modal.querySelector('#lblBgm');
+        const lblSfx = modal.querySelector('#lblSfx');
+
+        // Handlers
+        selLang.addEventListener('change', () => {
+            this.settingsService?.setLanguage(selLang.value);
+        });
+        rngBgm.addEventListener('input', () => {
+            lblBgm.textContent = `${rngBgm.value}%`;
+            const v = Number(rngBgm.value)/100;
+            this.settingsService?.setBGMVolume(v);
+            this.audioService?.setBGMVolume(v);
+        });
+        rngSfx.addEventListener('input', () => {
+            lblSfx.textContent = `${rngSfx.value}%`;
+            const v = Number(rngSfx.value)/100;
+            this.settingsService?.setSFXVolume(v);
+            this.audioService?.setSFXVolume(v);
+        });
+        modal.querySelector('#btnTestSfx').addEventListener('click', () => this.audioService?.playSFX('click'));
+        modal.querySelector('#btnCancelSettings').addEventListener('click', close);
+        modal.querySelector('#btnSaveSettings').addEventListener('click', close);
+        modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
     }
 
     /**

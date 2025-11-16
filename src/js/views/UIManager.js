@@ -2,9 +2,10 @@ import { BoardView } from './BoardView.js';
 import { ORIENTATIONS, CSS_CLASSES, MESSAGES } from '../config/constants.js';
 
 export class UIManager {
-    constructor(gameController, currentUser = null) {
+    constructor(gameController, currentUser = null, audioService = null) {
         this.gameController = gameController;
         this.currentUser = currentUser;
+        this.audioService = audioService;
         this.handlers = {}; // referencias para poder desuscribir listeners
         
         // Estado para drag & drop
@@ -328,6 +329,7 @@ export class UIManager {
             this.gameController.selectShip(ship.id);
             this.updateShipCardsSelection(ship.id);
             this.updatePlacementHint(`${ship.name} seleccionado - Haz clic en el tablero`);
+            this.audioService?.playSFX('click');
         } catch (error) {
             this.showToast(error.message, 'error');
         }
@@ -370,6 +372,7 @@ export class UIManager {
                     this.gameController.rotateShip(existingShip);
                     this.playerBoardView.hideShips = false;
                     this.playerBoardView.render(this.gameController.humanPlayer.board);
+                    this.audioService?.playSFX('rotate_ship');
                     
                     // Verificar si el barco se movió a una nueva posición
                     const newPos = existingShip.positions[0];
@@ -392,6 +395,7 @@ export class UIManager {
                 this.playerBoardView.render(this.gameController.humanPlayer.board);
                 this.renderShipsPanel();
                 this.playerBoardView.clearPreview();
+                this.audioService?.playSFX('place_ship');
             }
             return;
         }
@@ -458,6 +462,7 @@ export class UIManager {
                         this.gameController.rotateShip(existingShip);
                         this.computerBoardView.hideShips = false;
                         this.computerBoardView.render(this.gameController.computerPlayer.board);
+                        this.audioService?.playSFX('rotate_ship');
                         
                         // Verificar si el barco se movió a una nueva posición
                         const newPos = existingShip.positions[0];
@@ -480,6 +485,7 @@ export class UIManager {
                     this.computerBoardView.render(this.gameController.computerPlayer.board);
                     this.renderShipsPanel();
                     this.computerBoardView.clearPreview();
+                    this.audioService?.playSFX('place_ship');
                 }
             }
             return;
@@ -628,6 +634,7 @@ export class UIManager {
                 boardView.clearPreview();
                 
                 this.showToast('Barco movido', 'success');
+                this.audioService?.playSFX('place_ship');
             } catch (err) {
                 this.showToast(err.message, 'error');
             }
@@ -1013,8 +1020,13 @@ export class UIManager {
 
         if (data.hit) {
             boardView.updateCell(data.row, data.col, 'hit');
+            // efecto de sonido para acierto
+            console.log('🎯 Hit detected, audioService:', !!this.audioService);
+            if (this.audioService) this.audioService.playSFX('hit');
         } else if (data.miss) {
             boardView.updateCell(data.row, data.col, 'miss');
+            console.log('💦 Miss detected, audioService:', !!this.audioService);
+            if (this.audioService) this.audioService.playSFX('miss');
         }
     }
 
@@ -1037,6 +1049,7 @@ export class UIManager {
                 this.playerBoardView.markShipSunk(data.ship);
             }
         }
+        if (this.audioService) this.audioService.playSFX('sink');
     }
 
       onGameOver(data) {
@@ -1063,6 +1076,9 @@ export class UIManager {
         setTimeout(() => {
             this.showGameOverModal(data);
         }, 400);
+
+        // SFX al finalizar
+        if (this.audioService) this.audioService.playSFX(isPlayerWinner ? 'victory' : 'defeat');
     }
 
     onGameReset() {
