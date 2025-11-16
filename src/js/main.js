@@ -257,9 +257,80 @@ class BattleshipApp {
      */
     showHelp() {
         console.log('❓ Mostrando ayuda...');
-        // TODO: Implementar pantalla de ayuda para RF02
-        alert('Ayuda - Próximamente disponible');
-        this.menuController.backToMenu();
+        // Crear modal reutilizando estilos generales de .modal
+        const helpModal = document.createElement('div');
+        helpModal.className = 'modal modal--active';
+        helpModal.id = 'helpModal';
+
+        helpModal.innerHTML = `
+            <div class="modal-content help-modal">
+                <div class="help-hero">
+                    <h2 class="help-hero__title">⚓ Guía Rápida</h2>
+                    <p class="help-hero__subtitle">Todo lo básico para disfrutar Batalla Naval</p>
+                </div>
+                <div class="help-body">
+                    <div class="help-grid" style="margin-bottom:12px;">
+                        <section class="help-card help-card--accent">
+                            <h3 class="help-card__title">🎯 Objetivo</h3>
+                            <p style="margin:0">Hundir todos los barcos del rival antes de que hundan los tuyos.</p>
+                        </section>
+                        <section class="help-card">
+                            <h3 class="help-card__title">🧭 Colocación de barcos</h3>
+                            <ul class="help-list">
+                                <li>Haz clic sobre un barco ya colocado para <strong>rotarlo</strong>.</li>
+                                <li>También puedes <strong>arrastrarlo</strong> a otra posición válida.</li>
+                                <li>Botón "Colocación Aleatoria" para distribuirlos automáticamente.</li>
+                            </ul>
+                            <div class="help-badges" style="margin-top:6px;">
+                                <span class="kbd">H</span>
+                                <span>Horizontal</span>
+                                <span class="kbd">V</span>
+                                <span>Vertical</span>
+                            </div>
+                        </section>
+                    </div>
+
+                    <section class="help-card" style="margin-bottom:12px;">
+                        <h3 class="help-card__title">🎯 Turnos y disparos</h3>
+                        <ul class="help-list">
+                            <li>Durante tu turno, haz clic en el tablero rival para disparar.</li>
+                            <li>Un <strong>acierto</strong> marca la celda; sigue buscando ese barco.</li>
+                            <li>Un <strong>fallo</strong> pasa el turno al oponente.</li>
+                            <li>En modo local, ambos jugadores se alternan en el mismo dispositivo.</li>
+                        </ul>
+                    </section>
+
+                    <section class="help-modes" style="margin-bottom:12px;">
+                        <div class="help-mode help-mode--ai">
+                            <div class="help-mode__title">🤖 Contra la Máquina</div>
+                            <div>Ideal para practicar. Si iniciaste sesión, ganas <strong>puntos</strong>, <strong>nivel</strong> y <strong>racha</strong> al terminar cada partida.</div>
+                        </div>
+                        <div class="help-mode help-mode--local">
+                            <div class="help-mode__title">👥 Contra un Amigo</div>
+                            <div>Dos jugadores en el mismo dispositivo. Al finalizar se muestran <strong>ambos tableros</strong>. No afecta tu progreso.</div>
+                        </div>
+                    </section>
+
+                    <section class="help-card">
+                        <h3 class="help-card__title">💡 Consejos</h3>
+                        <ul class="help-list">
+                            <li>Si al rotar un barco no cabe, el juego intenta <strong>recolocarlo cerca</strong> automáticamente.</li>
+                            <li>Puedes <strong>rendirte</strong> durante la partida con el botón "Rendirse".</li>
+                        </ul>
+                    </section>
+                </div>
+                <div class="help-footer">
+                    <button class="btn btn--primary" id="btnCloseHelp">Entendido</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(helpModal);
+
+        // Cerrar con botón o clic fuera
+        const close = () => helpModal.remove();
+        helpModal.querySelector('#btnCloseHelp').addEventListener('click', close);
+        helpModal.addEventListener('click', (e) => { if (e.target === helpModal) close(); });
     }
 
     /**
