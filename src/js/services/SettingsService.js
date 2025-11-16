@@ -5,6 +5,7 @@ export class SettingsService {
             language: 'es',
             bgmVolume: 0.6, // 0..1
             sfxVolume: 0.8, // 0..1
+            muted: false
         };
         this.state = this.load();
     }
@@ -45,6 +46,11 @@ export class SettingsService {
     setSFXVolume(v) {
         const vol = Math.max(0, Math.min(1, Number(v)));
         this.state.sfxVolume = isNaN(vol) ? this.defaults.sfxVolume : vol;
+        this.save();
+    }
+
+    setMuted(flag) {
+        this.state.muted = !!flag;
         this.save();
     }
 }

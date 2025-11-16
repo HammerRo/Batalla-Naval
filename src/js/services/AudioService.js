@@ -5,6 +5,7 @@ export class AudioService {
         this.currentBgm = null;
         this.sfxCache = new Map(); // name -> HTMLAudioElement
         this.base = 'src/assets/sounds';
+        this.muted = !!(this.settings?.getSettings?.().muted);
         // mapping names to filenames
         this.bgmFiles = {
             menu: ['bgm/menu_theme.mp3', 'bgm/menu_theme.ogg'],
@@ -32,7 +33,18 @@ export class AudioService {
         console.log('🔊 AudioService initialized - SFX volume:', this.sfxVolume);
         // Try to unlock audio on first user gesture
         const unlock = () => {
-            try { this.bgm.play().then(() => { this.bgm.pause(); }); } catch {}
+            try {
+                // If a BGM source is already selected, start playing now
+                if (this.bgm && (this.bgm.src || this.currentBgm)) {
+                    if (!this.bgm.src && this.currentBgm) {
+                        this.bgm.src = `${this.base}/${this.currentBgm}`;
+                    }
+                    this.bgm.play().catch(() => {});
+                } else {
+                    // Otherwise just nudge the media element to unlock
+                    this.bgm.play().then(() => { this.bgm.pause(); }).catch(() => {});
+                }
+            } catch {}
             console.log('🔓 Audio unlocked on user gesture');
             window.removeEventListener('pointerdown', unlock);
         };
@@ -43,6 +55,7 @@ export class AudioService {
         const s = this.settings?.getSettings?.() ?? { bgmVolume: 0.6, sfxVolume: 0.8 };
         if (this.bgm) this.bgm.volume = s.bgmVolume;
         this.sfxVolume = s.sfxVolume;
+        if (this.bgm) this.bgm.muted = !!this.muted;
     }
 
     setBGMVolume(v) { if (this.bgm) this.bgm.volume = Math.max(0, Math.min(1, v)); }
@@ -60,10 +73,13 @@ export class AudioService {
         this.bgm.src = `${this.base}/${src}`;
         this.applyVolumes();
         // try to play, may be blocked until first interaction
-        this.bgm.play().catch(() => {/* ignored until gesture */});
+        if (!this.muted) {
+            this.bgm.play().catch(() => {/* ignored until gesture */});
+        }
     }
 
     playSFX(name) {
+        if (this.muted) return; // global mute suppresses SFX
         console.log(`🎵 Attempting to play SFX: ${name}`);
         const files = this.sfxFiles[name];
         if (!files) {
@@ -113,6 +129,7 @@ export class AudioService {
     }
 
     playBeepFallback(tag) {
+        if (this.muted) return;
         try {
             const ctx = this._ctx || (this._ctx = new (window.AudioContext || window.webkitAudioContext)());
             const osc = ctx.createOscillator();
@@ -143,4 +160,22 @@ export class AudioService {
             console.warn('Fallback beep failed:', e);
         }
     }
+
+    setMuted(flag) {
+        this.muted = !!flag;
+        if (this.bgm) this.bgm.muted = this.muted;
+        if (this.muted) {
+            try { this.bgm.pause(); } catch {}
+        } else if (this.bgm && (this.bgm.src || this.currentBgm)) {
+            if (!this.bgm.src && this.currentBgm) this.bgm.src = `${this.base}/${this.currentBgm}`;
+            this.bgm.play().catch(() => {});
+        }
+    }
+
+    toggleMute() {
+        this.setMuted(!this.muted);
+        return this.muted;
+    }
+
+    isMuted() { return !!this.muted; }
 }

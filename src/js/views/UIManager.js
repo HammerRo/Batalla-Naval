@@ -329,7 +329,7 @@ export class UIManager {
             this.gameController.selectShip(ship.id);
             this.updateShipCardsSelection(ship.id);
             this.updatePlacementHint(`${ship.name} seleccionado - Haz clic en el tablero`);
-            this.audioService?.playSFX('click');
+            this.audioService?.playSFX('confirm');
         } catch (error) {
             this.showToast(error.message, 'error');
         }

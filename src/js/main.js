@@ -47,6 +47,12 @@ class BattleshipApp {
 
         const loginElement = this.loginScreen.render();
         document.body.insertBefore(loginElement, document.body.firstChild);
+
+        // Iniciar música de menú también en la pantalla de login
+        this.audioService?.playBGM('menu');
+
+        // Renderizar control global de audio
+        this.renderAudioToggle();
     }
 
     onLoginSuccess(user) {
@@ -99,6 +105,9 @@ class BattleshipApp {
 
             // Música de menú
             this.audioService?.playBGM('menu');
+
+            // Asegurar que el botón de audio esté presente/actualizado
+            this.renderAudioToggle();
 
             // Conectar eventos del menú
             this.menuController.on('start-game', () => this.showGameModeSelection());
@@ -218,6 +227,9 @@ class BattleshipApp {
             // Música de juego
             this.audioService?.playBGM('game');
 
+            // Mantener el botón de audio durante la partida
+            this.renderAudioToggle();
+
             console.log('✅ Juego inicializado correctamente');
             console.log(`📊 Modo de juego: ${this.gameMode === 'ai' ? '🤖 Contra la Máquina' : '👥 Contra un Amigo'}`);
 
@@ -233,6 +245,43 @@ class BattleshipApp {
             console.error('❌ Error al iniciar juego:', error);
             this.showErrorScreen(error);
         }
+    }
+
+    /**
+     * Crea o actualiza el botón flotante de Mute/Unmute global
+     */
+    renderAudioToggle() {
+        try {
+            let btn = document.getElementById('audio-toggle');
+            if (!btn) {
+                btn = document.createElement('button');
+                btn.id = 'audio-toggle';
+                btn.className = 'audio-toggle';
+                btn.type = 'button';
+                btn.title = 'Mute/Unmute';
+                btn.addEventListener('click', () => {
+                    const muted = this.audioService?.toggleMute();
+                    this.settingsService?.setMuted(!!muted);
+                    this.updateAudioToggle(btn, !!muted);
+                });
+                document.body.appendChild(btn);
+            }
+            const muted = this.audioService?.isMuted?.() || false;
+            this.updateAudioToggle(btn, muted);
+        } catch (e) {
+            console.warn('No se pudo renderizar el botón de audio:', e);
+        }
+    }
+
+    /**
+     * Actualiza apariencia/ícono del botón de audio
+     * @param {HTMLButtonElement} btn 
+     * @param {boolean} muted 
+     */
+    updateAudioToggle(btn, muted) {
+        if (!btn) return;
+        btn.classList.toggle('audio-toggle--muted', !!muted);
+        btn.textContent = muted ? '🔇' : '🔊';
     }
 
     /**
@@ -332,7 +381,7 @@ class BattleshipApp {
             this.settingsService?.setSFXVolume(v);
             this.audioService?.setSFXVolume(v);
         });
-        modal.querySelector('#btnTestSfx').addEventListener('click', () => this.audioService?.playSFX('click'));
+        modal.querySelector('#btnTestSfx').addEventListener('click', () => this.audioService?.playSFX('confirm'));
         modal.querySelector('#btnCancelSettings').addEventListener('click', close);
         modal.querySelector('#btnSaveSettings').addEventListener('click', close);
         modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
