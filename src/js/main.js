@@ -367,22 +367,13 @@ class BattleshipApp {
         const percent = (v) => Math.round((v ?? 0) * 100);
 
         modal.innerHTML = `
-            <div class="modal-content help-modal" style="max-width:720px;">
+            <div class="modal-content help-modal" style="max-width:520px;">
                 <div class="help-hero">
                     <h2 class="help-hero__title">⚙️ Configuración</h2>
-                    <p class="help-hero__subtitle">Idioma y sonido</p>
+                    <p class="help-hero__subtitle">Ajustes de sonido</p>
                 </div>
                 <div class="help-body">
                     <div class="help-grid" style="margin-bottom:12px;">
-                        <section class="help-card">
-                            <h3 class="help-card__title">🌐 Idioma</h3>
-                            <label style="display:block; font-weight:600; margin-bottom:6px;">Selecciona idioma</label>
-                            <select id="selLang" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
-                                <option value="es" ${s.language === 'es' ? 'selected' : ''}>Español</option>
-                                <option value="en" ${s.language === 'en' ? 'selected' : ''}>English</option>
-                            </select>
-                            <p style="margin:8px 0 0; color:#666; font-size:0.9rem;">Algunos textos pueden actualizarse al volver al menú.</p>
-                        </section>
                         <section class="help-card help-card--accent">
                             <h3 class="help-card__title">🔊 Volumen</h3>
                             <div style="display:grid; gap:10px;">
@@ -409,19 +400,12 @@ class BattleshipApp {
         document.body.appendChild(modal);
 
         const close = () => modal.remove();
-        const selLang = modal.querySelector('#selLang');
         const rngBgm = modal.querySelector('#rngBgm');
         const rngSfx = modal.querySelector('#rngSfx');
         const lblBgm = modal.querySelector('#lblBgm');
         const lblSfx = modal.querySelector('#lblSfx');
 
         // Handlers
-        selLang.addEventListener('change', () => {
-            this.settingsService?.setLanguage(selLang.value);
-            // Update UI language immediately
-            this.updateUILanguage(selLang.value);
-        });
-        
         rngBgm.addEventListener('input', () => {
             const v = Number(rngBgm.value)/100;
             lblBgm.textContent = `${rngBgm.value}%`;
