@@ -270,3 +270,77 @@
         font-size: 0.85rem;
     }
 }
+
+/* Modal de Dificultad */
+.difficulty-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.difficulty-btn {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.difficulty-btn:hover {
+    border-color: var(--color-primary, #667eea);
+    background: rgba(102, 126, 234, 0.05);
+    transform: translateX(5px);
+}
+
+.difficulty-btn--selected {
+    border-color: var(--color-primary, #667eea);
+    background: rgba(102, 126, 234, 0.1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.difficulty-btn--easy:hover,
+.difficulty-btn--easy.difficulty-btn--selected {
+    border-color: #51cf66;
+    background: rgba(81, 207, 102, 0.1);
+}
+
+.difficulty-btn--normal:hover,
+.difficulty-btn--normal.difficulty-btn--selected {
+    border-color: #ffa94d;
+    background: rgba(255, 169, 77, 0.1);
+}
+
+.difficulty-btn--hard:hover,
+.difficulty-btn--hard.difficulty-btn--selected {
+    border-color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+}
+
+.difficulty-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+    min-width: 50px;
+    text-align: center;
+}
+
+.difficulty-info {
+    flex: 1;
+}
+
+.difficulty-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.3rem;
+    color: #333;
+}
+
+.difficulty-info p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #666;
+}

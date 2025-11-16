@@ -10,7 +10,7 @@ export class GameController extends EventEmitter {
         this.gameState = GAME_STATES.SETUP;
         this.humanPlayer = new Player('Jugador 1', false);
         this.computerPlayer = new Player('Jugador 2', true);
-        this.aiService = new AIService();
+        this.aiService = new AIService('normal'); // Por defecto normal
         this.currentPlayer = this.humanPlayer;
         this.selectedShip = null;
         this.selectedOrientation = ORIENTATIONS.HORIZONTAL;
@@ -22,6 +22,15 @@ export class GameController extends EventEmitter {
         this.progressionService = progressionService; // Sistema de progresión
 
         this.initialize();
+    }
+
+    /**
+     * Establece la dificultad de la IA
+     * @param {string} difficulty - 'easy', 'normal', 'hard'
+     */
+    setAIDifficulty(difficulty) {
+        this.aiService.setDifficulty(difficulty);
+        console.log(`🎯 Dificultad de IA establecida en: ${difficulty}`);
     }
 
     initialize() {

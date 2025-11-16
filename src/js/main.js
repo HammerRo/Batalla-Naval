@@ -18,6 +18,7 @@ class BattleshipApp {
         this.gameModeView = null;
         this.currentUser = null;
         this.gameMode = null; // 'ai' o 'local'
+        this.aiDifficulty = 'normal'; // 'easy', 'normal', 'hard'
         this.progressionService = null;
         this.settingsService = null;
         this.audioService = null;
@@ -174,12 +175,15 @@ class BattleshipApp {
 
     /**
      * Maneja la selección del modo de juego
-     * @param {Object} data - Datos con el modo seleccionado (ai o local)
+     * @param {Object} data - Datos con el modo seleccionado (ai o local) y dificultad
      */
     onGameModeSelected(data) {
-        console.log(`🎮 Modo seleccionado: ${data.mode === 'ai' ? 'Contra la Máquina' : 'Contra un Amigo'}`);
+        const modeText = data.mode === 'ai' ? 'Contra la Máquina' : 'Contra un Amigo';
+        const difficultyText = data.difficulty ? ` (${data.difficulty})` : '';
+        console.log(`🎮 Modo seleccionado: ${modeText}${difficultyText}`);
         
         this.gameMode = data.mode;
+        this.aiDifficulty = data.difficulty || 'normal';
         this.startGame();
     }
 
@@ -243,6 +247,12 @@ class BattleshipApp {
             // Crear controlador del juego con el modo seleccionado
             this.gameController = new GameController(this.progressionService);
             this.gameController.gameMode = this.gameMode; // Pasar modo de juego
+            
+            // Si es modo AI, establecer la dificultad
+            if (this.gameMode === 'ai' && this.aiDifficulty) {
+                this.gameController.setAIDifficulty(this.aiDifficulty);
+            }
+            
             // Asegurar que la inicialización respete el modo desde el primer juego
             if (typeof this.gameController.initialize === 'function') {
                 this.gameController.initialize();
@@ -265,7 +275,14 @@ class BattleshipApp {
             this.renderAudioToggle();
 
             console.log('✅ Juego inicializado correctamente');
-            console.log(`📊 Modo de juego: ${this.gameMode === 'ai' ? '🤖 Contra la Máquina' : '👥 Contra un Amigo'}`);
+            const modeText = this.gameMode === 'ai' ? '🤖 Contra la Máquina' : '👥 Contra un Amigo';
+            const difficultyEmoji = {
+                'easy': '😊',
+                'normal': '😐',
+                'hard': '😈'
+            };
+            const difficultyText = this.gameMode === 'ai' ? ` - Dificultad: ${difficultyEmoji[this.aiDifficulty] || ''} ${this.aiDifficulty}` : '';
+            console.log(`📊 Modo de juego: ${modeText}${difficultyText}`);
 
             // Exponer para debugging
             window.game = {

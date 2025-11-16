@@ -8,6 +8,7 @@ export class GameModeView {
         this.menuController = menuController;
         this.audioService = audioService;
         this.container = null;
+        this.selectedDifficulty = 'normal'; // Por defecto: normal
     }
 
     /**
@@ -71,6 +72,44 @@ export class GameModeView {
                     </button>
                 </div>
             </div>
+
+            <!-- Modal de Selección de Dificultad -->
+            <div class="modal" id="difficultyModal" style="display: none;">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h2>🎯 Selecciona la Dificultad</h2>
+                    </div>
+                    <div class="modal-body">
+                        <div class="difficulty-options">
+                            <button class="difficulty-btn difficulty-btn--easy" data-difficulty="easy">
+                                <div class="difficulty-icon">😊</div>
+                                <div class="difficulty-info">
+                                    <h3>Fácil</h3>
+                                    <p>La IA ataca aleatoriamente</p>
+                                </div>
+                            </button>
+                            <button class="difficulty-btn difficulty-btn--normal difficulty-btn--selected" data-difficulty="normal">
+                                <div class="difficulty-icon">😐</div>
+                                <div class="difficulty-info">
+                                    <h3>Normal</h3>
+                                    <p>La IA ataca cerca de sus aciertos</p>
+                                </div>
+                            </button>
+                            <button class="difficulty-btn difficulty-btn--hard" data-difficulty="hard">
+                                <div class="difficulty-icon">😈</div>
+                                <div class="difficulty-info">
+                                    <h3>Difícil</h3>
+                                    <p>La IA busca en línea para hundir barcos</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn--secondary" id="btnCancelDifficulty">Cancelar</button>
+                        <button class="btn btn--primary" id="btnConfirmDifficulty">Comenzar</button>
+                    </div>
+                </div>
+            </div>
         `;
 
         // Agregar event listeners
@@ -89,12 +128,17 @@ export class GameModeView {
         const btnAI = this.container.querySelector('#btnGameAI');
         const btnLocal = this.container.querySelector('#btnGameLocal');
         const btnBack = this.container.querySelector('#btnBackToMenu');
+        const difficultyModal = this.container.querySelector('#difficultyModal');
+        const difficultyButtons = this.container.querySelectorAll('.difficulty-btn');
+        const btnConfirmDifficulty = this.container.querySelector('#btnConfirmDifficulty');
+        const btnCancelDifficulty = this.container.querySelector('#btnCancelDifficulty');
 
         // Guardar referencias a las funciones de los manejadores
         this._handleAIClick = () => {
             this.audioService?.playSFX('confirm');
-            console.log('🤖 Seleccionado: Contra la Máquina');
-            this.menuController.emit('game-mode-selected', { mode: 'ai' });
+            console.log('🤖 Mostrando selección de dificultad...');
+            // Mostrar modal de dificultad
+            difficultyModal.style.display = 'flex';
         };
 
         this._handleLocalClick = () => {
@@ -109,10 +153,49 @@ export class GameModeView {
             this.menuController.emit('back-to-menu');
         };
 
+        // Manejadores de selección de dificultad
+        difficultyButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.audioService?.playSFX('click');
+                // Remover selección anterior
+                difficultyButtons.forEach(b => b.classList.remove('difficulty-btn--selected'));
+                // Marcar como seleccionado
+                btn.classList.add('difficulty-btn--selected');
+                this.selectedDifficulty = btn.dataset.difficulty;
+            });
+        });
+
+        // Confirmar dificultad y empezar juego
+        this._handleConfirmDifficulty = () => {
+            this.audioService?.playSFX('confirm');
+            console.log(`🤖 Seleccionado: Contra la Máquina - Dificultad: ${this.selectedDifficulty}`);
+            difficultyModal.style.display = 'none';
+            this.menuController.emit('game-mode-selected', { 
+                mode: 'ai', 
+                difficulty: this.selectedDifficulty 
+            });
+        };
+
+        // Cancelar selección de dificultad
+        this._handleCancelDifficulty = () => {
+            this.audioService?.playSFX('cancel');
+            difficultyModal.style.display = 'none';
+        };
+
         // Asignar los manejadores
         if (btnAI) btnAI.addEventListener('click', this._handleAIClick);
         if (btnLocal) btnLocal.addEventListener('click', this._handleLocalClick);
         if (btnBack) btnBack.addEventListener('click', this._handleBackClick);
+        if (btnConfirmDifficulty) btnConfirmDifficulty.addEventListener('click', this._handleConfirmDifficulty);
+        if (btnCancelDifficulty) btnCancelDifficulty.addEventListener('click', this._handleCancelDifficulty);
+
+        // Cerrar modal al hacer click fuera
+        difficultyModal?.addEventListener('click', (e) => {
+            if (e.target === difficultyModal) {
+                this.audioService?.playSFX('cancel');
+                difficultyModal.style.display = 'none';
+            }
+        });
     }
 
     /**
@@ -122,6 +205,8 @@ export class GameModeView {
         const btnAI = this.container?.querySelector('#btnGameAI');
         const btnLocal = this.container?.querySelector('#btnGameLocal');
         const btnBack = this.container?.querySelector('#btnBackToMenu');
+        const btnConfirmDifficulty = this.container?.querySelector('#btnConfirmDifficulty');
+        const btnCancelDifficulty = this.container?.querySelector('#btnCancelDifficulty');
 
         // Remover listeners existentes si existen
         if (btnAI && this._handleAIClick) {
@@ -132,6 +217,12 @@ export class GameModeView {
         }
         if (btnBack && this._handleBackClick) {
             btnBack.removeEventListener('click', this._handleBackClick);
+        }
+        if (btnConfirmDifficulty && this._handleConfirmDifficulty) {
+            btnConfirmDifficulty.removeEventListener('click', this._handleConfirmDifficulty);
+        }
+        if (btnCancelDifficulty && this._handleCancelDifficulty) {
+            btnCancelDifficulty.removeEventListener('click', this._handleCancelDifficulty);
         }
     }
 }
