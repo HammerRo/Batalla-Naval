@@ -41,11 +41,12 @@ export class ProgressionService {
     }
 
     /**
-     * Calcula los puntos ganados por victoria según la dificultad
+     * Calcula los puntos ganados por victoria según la dificultad y racha
      * @param {string} difficulty - 'easy', 'normal', 'hard'
+     * @param {number} winStreak - Racha de victorias actual
      * @returns {number} Puntos ganados
      */
-    calculateVictoryPoints(difficulty = 'normal') {
+    calculateVictoryPoints(difficulty = 'normal', winStreak = 0) {
         // Puntos base según dificultad
         const difficultyPoints = {
             'easy': 1,
@@ -53,7 +54,10 @@ export class ProgressionService {
             'hard': 3
         };
         
-        return difficultyPoints[difficulty] || 2;
+        const basePoints = difficultyPoints[difficulty] || 2;
+        const streakBonus = winStreak; // +0 primera victoria, +1 segunda, +2 tercera, etc.
+        
+        return basePoints + streakBonus;
     }
 
     /**
@@ -68,12 +72,13 @@ export class ProgressionService {
             return null;
         }
 
-        // Calcular puntos ganados según dificultad
-        const pointsEarned = this.calculateVictoryPoints(difficulty);
+        // Calcular puntos ganados según dificultad y racha actual
+        const currentStreak = user.winStreak || 0;
+        const pointsEarned = this.calculateVictoryPoints(difficulty, currentStreak);
         
         // Actualizar estadísticas
         user.points = (user.points || 0) + pointsEarned;
-        user.winStreak = (user.winStreak || 0) + 1;
+        user.winStreak = currentStreak + 1;
         user.totalVictories = (user.totalVictories || 0) + 1;
         user.gamesWon = (user.gamesWon || 0) + 1;
         user.gamesPlayed = (user.gamesPlayed || 0) + 1;
