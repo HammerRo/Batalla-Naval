@@ -6,10 +6,11 @@
 import { AuthService } from '../services/AuthService.js';
 
 export class LoginScreen {
-    constructor() {
+    constructor(audioService = null) {
         this.authService = new AuthService();
         this.onLoginSuccess = null;
         this.mode = 'login'; // 'login', 'register'
+        this.audioService = audioService;
     }
 
     /**
@@ -109,16 +110,27 @@ export class LoginScreen {
         const toggleMode = container.querySelector('#toggleMode');
         const tabs = container.querySelectorAll('.login-tab');
 
-        form.addEventListener('submit', (e) => this.handleFormSubmit(e, container));
-        btnGuest.addEventListener('click', () => this.handleGuestLogin(container));
-        btnRanking.addEventListener('click', () => this.showRanking(container));
+        form.addEventListener('submit', (e) => {
+            if (this.audioService) this.audioService.playSFX('confirm');
+            this.handleFormSubmit(e, container);
+        });
+        btnGuest.addEventListener('click', () => {
+            if (this.audioService) this.audioService.playSFX('confirm');
+            this.handleGuestLogin(container);
+        });
+        btnRanking.addEventListener('click', () => {
+            if (this.audioService) this.audioService.playSFX('confirm');
+            this.showRanking(container);
+        });
         toggleMode.addEventListener('click', (e) => {
             e.preventDefault();
+            if (this.audioService) this.audioService.playSFX('confirm');
             this.toggleMode(container);
         });
 
         tabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
+                if (this.audioService) this.audioService.playSFX('confirm');
                 const mode = e.target.dataset.mode;
                 this.switchMode(container, mode);
             });
@@ -127,6 +139,7 @@ export class LoginScreen {
         // Enter key en el último input
         container.querySelector('#password').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
+                if (this.audioService) this.audioService.playSFX('confirm');
                 form.dispatchEvent(new Event('submit'));
             }
         });

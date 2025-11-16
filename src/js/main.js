@@ -42,7 +42,7 @@ class BattleshipApp {
     showLoginScreen() {
         console.log('📝 Mostrando pantalla de login...');
         
-        this.loginScreen = new LoginScreen();
+        this.loginScreen = new LoginScreen(this.audioService);
         this.loginScreen.onLoginSuccess = (user) => this.onLoginSuccess(user);
 
         const loginElement = this.loginScreen.render();
