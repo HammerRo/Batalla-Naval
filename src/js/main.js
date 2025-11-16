@@ -367,30 +367,32 @@ class BattleshipApp {
         const percent = (v) => Math.round((v ?? 0) * 100);
 
         modal.innerHTML = `
-            <div class="modal-content help-modal" style="max-width:520px;">
+            <div class="modal-content help-modal" style="max-width:600px;">
                 <div class="help-hero">
                     <h2 class="help-hero__title">⚙️ Configuración</h2>
                     <p class="help-hero__subtitle">Ajustes de sonido</p>
                 </div>
-                <div class="help-body">
-                    <div class="help-grid" style="margin-bottom:12px;">
-                        <section class="help-card help-card--accent">
-                            <h3 class="help-card__title">🔊 Volumen</h3>
-                            <div style="display:grid; gap:10px;">
-                                <div>
-                                    <label style="font-weight:600;">Música de fondo</label>
-                                    <input type="range" id="rngBgm" min="0" max="100" value="${percent(s.bgmVolume)}"/>
-                                    <span id="lblBgm">${percent(s.bgmVolume)}%</span>
-                                </div>
-                                <div>
-                                    <label style="font-weight:600;">Efectos</label>
-                                    <input type="range" id="rngSfx" min="0" max="100" value="${percent(s.sfxVolume)}"/>
-                                    <span id="lblSfx">${percent(s.sfxVolume)}%</span>
-                                    <button class="btn btn--secondary" id="btnTestSfx" style="margin-left:10px; padding:6px 12px;">Probar</button>
+                <div class="help-body" style="display:flex; justify-content:center;">
+                    <section class="help-card help-card--accent" style="width:100%; max-width:450px;">
+                        <h3 class="help-card__title">🔊 Volumen</h3>
+                        <div style="display:grid; gap:20px;">
+                            <div>
+                                <label style="font-weight:600; display:block; margin-bottom:8px;">Música de fondo</label>
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <input type="range" id="rngBgm" min="0" max="100" value="${percent(s.bgmVolume)}" style="flex:1;"/>
+                                    <span id="lblBgm" style="min-width:45px; text-align:right;">${percent(s.bgmVolume)}%</span>
                                 </div>
                             </div>
-                        </section>
-                    </div>
+                            <div>
+                                <label style="font-weight:600; display:block; margin-bottom:8px;">Efectos</label>
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <input type="range" id="rngSfx" min="0" max="100" value="${percent(s.sfxVolume)}" style="flex:1;"/>
+                                    <span id="lblSfx" style="min-width:45px; text-align:right;">${percent(s.sfxVolume)}%</span>
+                                </div>
+                                <button class="btn btn--secondary" id="btnTestSfx" style="margin-top:10px; padding:8px 16px;">Probar</button>
+                            </div>
+                        </div>
+                    </section>
                 </div>
                 <div class="help-footer">
                     <button class="btn btn--primary" id="btnSaveSettings">Listo</button>
