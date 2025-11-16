@@ -676,6 +676,9 @@ export class UIManager {
 
     handleStartGame() {
         try {
+            // Play confirm sound
+            this.audioService?.playSFX('confirm');
+            
             const mode = this.gameController?.gameMode;
             const phase = this.gameController?.localSetupPhase;
             
@@ -687,6 +690,7 @@ export class UIManager {
                 this.gameController.startGame();
             }
         } catch (error) {
+            this.audioService?.playSFX('error');
             this.showToast(error.message, 'error');
         }
     }
@@ -727,8 +731,11 @@ export class UIManager {
 
     handleRandomize() {
         try {
+            // Play place_ship sound for random placement
+            this.audioService?.playSFX('place_ship');
             this.gameController.placeShipsRandomly();
         } catch (error) {
+            this.audioService?.playSFX('error');
             this.showToast(error.message, 'error');
         }
     }

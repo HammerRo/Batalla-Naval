@@ -4,8 +4,9 @@
  */
 
 export class GameModeView {
-    constructor(menuController) {
+    constructor(menuController, audioService = null) {
         this.menuController = menuController;
+        this.audioService = audioService;
         this.container = null;
     }
 
@@ -89,6 +90,7 @@ export class GameModeView {
         // Click en modo Contra la Máquina
         if (btnAI) {
             btnAI.addEventListener('click', () => {
+                this.audioService?.playSFX('confirm');
                 console.log('🤖 Seleccionado: Contra la Máquina');
                 this.menuController.emit('game-mode-selected', { mode: 'ai' });
             });
@@ -97,6 +99,7 @@ export class GameModeView {
         // Click en modo Contra un Amigo
         if (btnLocal) {
             btnLocal.addEventListener('click', () => {
+                this.audioService?.playSFX('confirm');
                 console.log('👥 Seleccionado: Contra un Amigo');
                 this.menuController.emit('game-mode-selected', { mode: 'local' });
             });
@@ -105,8 +108,9 @@ export class GameModeView {
         // Click en Volver al Menú
         if (btnBack) {
             btnBack.addEventListener('click', () => {
-                console.log('🔙 Volviendo al menú...');
-                this.menuController.emit('back-to-menu');
+                this.audioService?.playSFX('confirm');
+                console.log('🔙 Volviendo al Menú Principal');
+                this.menuController.navigateTo('main');
             });
         }
     }

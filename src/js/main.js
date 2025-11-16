@@ -142,7 +142,7 @@ class BattleshipApp {
             }
 
             // Crear vista de selección de modo
-            this.gameModeView = new GameModeView(this.menuController);
+            this.gameModeView = new GameModeView(this.menuController, this.audioService);
             const gameModeElement = this.gameModeView.render();
 
             // Agregar a DOM
@@ -351,8 +351,7 @@ class BattleshipApp {
                     </div>
                 </div>
                 <div class="help-footer">
-                    <button class="btn btn--secondary" id="btnCancelSettings">Cancelar</button>
-                    <button class="btn btn--primary" id="btnSaveSettings">Guardar</button>
+                    <button class="btn btn--primary" id="btnSaveSettings">Listo</button>
                 </div>
             </div>`;
 
@@ -368,23 +367,110 @@ class BattleshipApp {
         // Handlers
         selLang.addEventListener('change', () => {
             this.settingsService?.setLanguage(selLang.value);
+            // Update UI language immediately
+            this.updateUILanguage(selLang.value);
         });
+        
         rngBgm.addEventListener('input', () => {
-            lblBgm.textContent = `${rngBgm.value}%`;
             const v = Number(rngBgm.value)/100;
+            lblBgm.textContent = `${rngBgm.value}%`;
             this.settingsService?.setBGMVolume(v);
             this.audioService?.setBGMVolume(v);
         });
+        
         rngSfx.addEventListener('input', () => {
-            lblSfx.textContent = `${rngSfx.value}%`;
             const v = Number(rngSfx.value)/100;
+            lblSfx.textContent = `${rngSfx.value}%`;
             this.settingsService?.setSFXVolume(v);
             this.audioService?.setSFXVolume(v);
         });
+        
+        // Test SFX button
         modal.querySelector('#btnTestSfx').addEventListener('click', () => this.audioService?.playSFX('confirm'));
-        modal.querySelector('#btnCancelSettings').addEventListener('click', close);
-        modal.querySelector('#btnSaveSettings').addEventListener('click', close);
-        modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+        
+        // Accept button (previously Save)
+        modal.querySelector('#btnSaveSettings').addEventListener('click', () => {
+            this.audioService?.playSFX('confirm');
+            close();
+        });
+        
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => { 
+            if (e.target === modal) {
+                this.audioService?.playSFX('confirm');
+                close();
+            }
+        });
+    }
+
+    /**
+     * Actualiza los textos de la interfaz según el idioma seleccionado
+     * @param {string} lang - Código de idioma ('es' o 'en')
+     */
+    updateUILanguage(lang) {
+        const translations = {
+            es: {
+                settings: {
+                    title: '⚙️ Configuración',
+                    subtitle: 'Idioma y sonido',
+                    language: '🌐 Idioma',
+                    selectLanguage: 'Selecciona idioma',
+                    someTextsMayUpdate: 'Algunos textos pueden actualizarse al volver al menú.',
+                    volume: '🔊 Volumen',
+                    bgmVolume: 'Música de fondo',
+                    sfxVolume: 'Efectos',
+                    testSfx: 'Probar',
+                    cancel: 'Cancelar',
+                    save: 'Guardar',
+                    saved: '¡Configuración guardada!'
+                },
+                // Add more translations as needed
+            },
+            en: {
+                settings: {
+                    title: '⚙️ Settings',
+                    subtitle: 'Language and Sound',
+                    language: '🌐 Language',
+                    selectLanguage: 'Select language',
+                    someTextsMayUpdate: 'Some texts may update when returning to the menu.',
+                    volume: '🔊 Volume',
+                    bgmVolume: 'Background Music',
+                    sfxVolume: 'Sound Effects',
+                    testSfx: 'Test',
+                    cancel: 'Cancel',
+                    save: 'Save',
+                    saved: 'Settings saved!'
+                },
+                // Add more translations as needed
+            }
+        };
+
+        // Get translations for the selected language, fallback to Spanish if not found
+        const t = translations[lang] || translations['es'];
+
+        // Update settings modal if it's open
+        const settingsModal = document.getElementById('settingsModal');
+        if (settingsModal) {
+            const elements = {
+                '.help-hero__title': t.settings.title,
+                '.help-hero__subtitle': t.settings.subtitle,
+                '.help-card__title': t.settings.language,
+                '#lblLanguage': t.settings.selectLanguage,
+                '.help-card:nth-child(2) .help-card__title': t.settings.volume,
+                '#lblBgmText': t.settings.bgmVolume,
+                '#lblSfxText': t.settings.sfxVolume,
+                '#btnTestSfx': t.settings.testSfx,
+                '#btnCancelSettings': t.settings.cancel,
+                '#btnSaveSettings': t.settings.save
+            };
+
+            Object.entries(elements).forEach(([selector, text]) => {
+                const element = settingsModal.querySelector(selector);
+                if (element) {
+                    element.textContent = text;
+                }
+            });
+        }
     }
 
     /**
@@ -463,7 +549,10 @@ class BattleshipApp {
         document.body.appendChild(helpModal);
 
         // Cerrar con botón o clic fuera
-        const close = () => helpModal.remove();
+        const close = () => {
+            this.audioService?.playSFX('confirm');
+            helpModal.remove();
+        };
         helpModal.querySelector('#btnCloseHelp').addEventListener('click', close);
         helpModal.addEventListener('click', (e) => { if (e.target === helpModal) close(); });
     }
