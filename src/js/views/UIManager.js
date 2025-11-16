@@ -185,6 +185,9 @@ export class UIManager {
     }
 
     attachEventListeners() {
+        // Si ya hay handlers, no los volvemos a agregar
+        if (this._listenersAttached) return;
+        
         // Crear referencias de handlers para poder removerlos después
         this.handlers.onStartClick = () => this.handleStartGame();
         this.handlers.onBackClick = () => this.handleBackToMenu();
@@ -206,6 +209,9 @@ export class UIManager {
         this.elements.btnPlayAgain?.addEventListener('click', this.handlers.onPlayAgainClick);
         this.elements.btnBackToMenuModal?.addEventListener('click', this.handlers.onBackToMenuModalClick);
         document.addEventListener('keydown', this.handlers.onKeyDown);
+        
+        // Marcar que los listeners ya fueron agregados
+        this._listenersAttached = true;
     }
 
     handleBackToMenu() {

@@ -177,10 +177,26 @@ class BattleshipApp {
     backToMenuFromGameMode() {
         console.log('🔙 Volviendo al menú desde selección de modo...');
         
+        // Limpiar referencias y listeners
+        if (this.gameModeView) {
+            // Si hay un método de limpieza en la vista, llamarlo
+            if (typeof this.gameModeView.cleanup === 'function') {
+                this.gameModeView.cleanup();
+            }
+            this.gameModeView = null;
+        }
+        
         // Remover pantalla de selección de modo
         const gameModeScreen = document.getElementById('gameModeScreen');
         if (gameModeScreen) {
             gameModeScreen.remove();
+        }
+
+        // Limpiar los controladores de eventos específicos del modo de juego
+        if (this.menuController) {
+            // Remover todos los listeners específicos del modo de juego
+            this.menuController.callbacks['game-mode-selected'] = [];
+            this.menuController.callbacks['back-to-menu'] = [];
         }
 
         // Mostrar menú nuevamente

@@ -83,35 +83,55 @@ export class GameModeView {
      * Conecta los event listeners de los botones
      */
     attachEventListeners() {
+        // Limpiar cualquier listener existente primero
+        this.cleanup();
+        
         const btnAI = this.container.querySelector('#btnGameAI');
         const btnLocal = this.container.querySelector('#btnGameLocal');
         const btnBack = this.container.querySelector('#btnBackToMenu');
 
-        // Click en modo Contra la Máquina
-        if (btnAI) {
-            btnAI.addEventListener('click', () => {
-                this.audioService?.playSFX('confirm');
-                console.log('🤖 Seleccionado: Contra la Máquina');
-                this.menuController.emit('game-mode-selected', { mode: 'ai' });
-            });
-        }
+        // Guardar referencias a las funciones de los manejadores
+        this._handleAIClick = () => {
+            this.audioService?.playSFX('confirm');
+            console.log('🤖 Seleccionado: Contra la Máquina');
+            this.menuController.emit('game-mode-selected', { mode: 'ai' });
+        };
 
-        // Click en modo Contra un Amigo
-        if (btnLocal) {
-            btnLocal.addEventListener('click', () => {
-                this.audioService?.playSFX('confirm');
-                console.log('👥 Seleccionado: Contra un Amigo');
-                this.menuController.emit('game-mode-selected', { mode: 'local' });
-            });
-        }
+        this._handleLocalClick = () => {
+            this.audioService?.playSFX('confirm');
+            console.log('👥 Seleccionado: Contra un Amigo');
+            this.menuController.emit('game-mode-selected', { mode: 'local' });
+        };
 
-        // Click en Volver al Menú
-        if (btnBack) {
-            btnBack.addEventListener('click', () => {
-                this.audioService?.playSFX('confirm');
-                console.log('🔙 Volviendo al Menú Principal');
-                this.menuController.navigateTo('main');
-            });
+        this._handleBackClick = () => {
+            this.audioService?.playSFX('back');
+            console.log('🔙 Volviendo al menú...');
+            this.menuController.emit('back-to-menu');
+        };
+
+        // Asignar los manejadores
+        if (btnAI) btnAI.addEventListener('click', this._handleAIClick);
+        if (btnLocal) btnLocal.addEventListener('click', this._handleLocalClick);
+        if (btnBack) btnBack.addEventListener('click', this._handleBackClick);
+    }
+
+    /**
+     * Limpia los event listeners
+     */
+    cleanup() {
+        const btnAI = this.container?.querySelector('#btnGameAI');
+        const btnLocal = this.container?.querySelector('#btnGameLocal');
+        const btnBack = this.container?.querySelector('#btnBackToMenu');
+
+        // Remover listeners existentes si existen
+        if (btnAI && this._handleAIClick) {
+            btnAI.removeEventListener('click', this._handleAIClick);
+        }
+        if (btnLocal && this._handleLocalClick) {
+            btnLocal.removeEventListener('click', this._handleLocalClick);
+        }
+        if (btnBack && this._handleBackClick) {
+            btnBack.removeEventListener('click', this._handleBackClick);
         }
     }
 }
