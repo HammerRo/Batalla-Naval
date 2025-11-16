@@ -37,12 +37,10 @@ export class GameModeView {
                             <div class="gamemode-card-content">
                                 <h2 class="gamemode-card-title">Contra la Máquina</h2>
                                 <p class="gamemode-card-desc">
-                                    Juega contra la IA en diferentes niveles de dificultad
+                                    Juega contra la computadora en diferentes niveles de dificultad
                                 </p>
                                 <ul class="gamemode-card-features">
                                     <li>✅ Fácil, Normal, Difícil</li>
-                                    <li>✅ Juega a tu ritmo</li>
-                                    <li>✅ Perfecto para practicar</li>
                                 </ul>
                             </div>
                         </button>
@@ -57,8 +55,6 @@ export class GameModeView {
                                 </p>
                                 <ul class="gamemode-card-features">
                                     <li>✅ Dos jugadores locales</li>
-                                    <li>✅ Turnos alternos</li>
-                                    <li>✅ Modo multijugador</li>
                                 </ul>
                             </div>
                         </button>
@@ -85,21 +81,21 @@ export class GameModeView {
                                 <div class="difficulty-icon">😊</div>
                                 <div class="difficulty-info">
                                     <h3>Fácil</h3>
-                                    <p>La IA ataca aleatoriamente</p>
+                                    <p>La computadora ataca aleatoriamente</p>
                                 </div>
                             </button>
                             <button class="difficulty-btn difficulty-btn--normal difficulty-btn--selected" data-difficulty="normal">
                                 <div class="difficulty-icon">😐</div>
                                 <div class="difficulty-info">
                                     <h3>Normal</h3>
-                                    <p>La IA ataca cerca de sus aciertos</p>
+                                    <p>La computadora ataca cerca de sus aciertos</p>
                                 </div>
                             </button>
                             <button class="difficulty-btn difficulty-btn--hard" data-difficulty="hard">
                                 <div class="difficulty-icon">😈</div>
                                 <div class="difficulty-info">
                                     <h3>Difícil</h3>
-                                    <p>La IA busca en línea para hundir barcos</p>
+                                    <p>La computadora busca en línea para hundir barcos</p>
                                 </div>
                             </button>
                         </div>
