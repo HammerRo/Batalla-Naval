@@ -83,6 +83,12 @@ class BattleshipApp {
         console.log('📋 Mostrando menú principal...');
         
         try {
+            // Ocultar contenedor del juego
+            const gameContainer = document.querySelector('.game-container');
+            if (gameContainer) {
+                gameContainer.style.display = 'none';
+            }
+
             // Refrescar datos del usuario desde AuthService para reflejar
             // inmediatamente la progresión actualizada después de una partida
             const auth = this.loginScreen?.authService;
@@ -135,6 +141,12 @@ class BattleshipApp {
         console.log('🎮 Mostrando selección de modo de juego...');
         
         try {
+            // Ocultar contenedor del juego
+            const gameContainer = document.querySelector('.game-container');
+            if (gameContainer) {
+                gameContainer.style.display = 'none';
+            }
+
             // Remover menú
             const menuScreen = document.getElementById('menuScreen');
             if (menuScreen) {
@@ -214,6 +226,12 @@ class BattleshipApp {
             const gameModeScreen = document.getElementById('gameModeScreen');
             if (gameModeScreen) {
                 gameModeScreen.remove();
+            }
+
+            // Mostrar contenedor del juego
+            const gameContainer = document.querySelector('.game-container');
+            if (gameContainer) {
+                gameContainer.style.display = 'block';
             }
 
             // Si ya existía una UI anterior, destruirla para evitar listeners duplicados
@@ -579,6 +597,12 @@ class BattleshipApp {
     logout() {
         console.log('👋 Cerrando sesión...');
         
+        // Ocultar contenedor del juego
+        const gameContainer = document.querySelector('.game-container');
+        if (gameContainer) {
+            gameContainer.style.display = 'none';
+        }
+
         // Remover menú
         const menuScreen = document.getElementById('menuScreen');
         if (menuScreen) {

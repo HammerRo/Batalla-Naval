@@ -2,10 +2,11 @@ import { BoardView } from './BoardView.js';
 import { ORIENTATIONS, CSS_CLASSES, MESSAGES } from '../config/constants.js';
 
 export class UIManager {
-    constructor(gameController, currentUser = null, audioService = null) {
+    constructor(gameController, currentUser = null, audioService = null, i18nService = null) {
         this.gameController = gameController;
         this.currentUser = currentUser;
         this.audioService = audioService;
+        this.i18n = i18nService;
         this.handlers = {}; // referencias para poder desuscribir listeners
         
         // Estado para drag & drop
@@ -24,6 +25,11 @@ export class UIManager {
         this.renderShipsPanel();
         this.configureForMode();
         // Usuario solo se muestra en el título del tablero
+
+        // Escuchar cambios de idioma
+        if (this.i18n) {
+            this.i18n.onLanguageChange(() => this.updateTexts());
+        }
     }
 
     configureForMode() {
