@@ -696,6 +696,9 @@ export class UIManager {
     }
 
     handleReset() {
+        // Play confirm sound
+        this.audioService?.playSFX('confirm');
+        
         const state = this.gameController.getGameState();
         
         // Si el juego está en progreso, cambiar a "Rendirse"
@@ -704,6 +707,9 @@ export class UIManager {
                 '¿Estás seguro de que quieres rendirte?',
                 'Esta acción no se puede deshacer y perderás la partida.',
                 () => {
+                    // Play confirm sound again when confirming surrender
+                    this.audioService?.playSFX('confirm');
+                    
                     // El jugador actual se rinde
                     if (this.gameController.gameMode === 'local') {
                         // En local, gana el contrario al jugador actual
@@ -715,6 +721,10 @@ export class UIManager {
                         // En modo AI, gana la computadora
                         this.gameController.endGame(this.gameController.computerPlayer);
                     }
+                },
+                () => {
+                    // Play confirm sound when canceling
+                    this.audioService?.playSFX('confirm');
                 }
             );
         } else {
@@ -723,7 +733,11 @@ export class UIManager {
                 '¿Estás seguro de que quieres reiniciar el juego?',
                 'Perderás toda la configuración actual.',
                 () => {
+                    this.audioService?.playSFX('confirm');
                     this.gameController.reset();
+                },
+                () => {
+                    this.audioService?.playSFX('confirm');
                 }
             );
         }
@@ -853,17 +867,22 @@ export class UIManager {
     }
 
     onGameStarted(data) {
-        this.elements.btnStart.disabled = true;
+        // Hide the 'A jugar' button when the game starts
+        if (this.elements.btnStart) {
+            this.elements.btnStart.style.display = 'none';
+        }
+        
         this.elements.btnRandomize.disabled = true;
         this.elements.btnRandomize.style.display = 'none';
         this.elements.btnHorizontal.disabled = true;
         this.elements.btnVertical.disabled = true;
-        // Ocultar botón de volver cuando la partida inicia
+        
+        // Hide back button when the game starts
         if (this.elements.btnBackToMenu) {
             this.elements.btnBackToMenu.style.display = 'none';
         }
         
-        // Cambiar texto del botón Reset a "Rendirse" durante el juego
+        // Change Reset button to "Rendirse" during the game
         if (this.elements.btnReset) {
             this.elements.btnReset.textContent = 'Rendirse';
             this.elements.btnReset.style.display = 'block';
@@ -1089,17 +1108,23 @@ export class UIManager {
     }
 
     onGameReset() {
-        this.elements.btnStart.disabled = true;
+        // Show the 'A jugar' button when resetting the game
+        if (this.elements.btnStart) {
+            this.elements.btnStart.style.display = 'block';
+            this.elements.btnStart.disabled = true; // Will be enabled when all ships are placed
+        }
+        
         this.elements.btnRandomize.disabled = false;
         this.elements.btnRandomize.style.display = 'block';
         this.elements.btnHorizontal.disabled = false;
         this.elements.btnVertical.disabled = false;
-        // Mostrar nuevamente el botón de volver al menú en fase de colocación
+        
+        // Show back to menu button during placement phase
         if (this.elements.btnBackToMenu) {
             this.elements.btnBackToMenu.style.display = 'block';
         }
         
-        // Ocultar indicador de turno y limpiar cualquier estado visual de cambio
+        // Hide turn indicator and clear any visual state
         if (this.elements.turnIndicator) {
             this.elements.turnIndicator.style.display = 'none';
             this.elements.turnIndicator.classList.remove('turn-changing');
