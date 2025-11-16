@@ -1114,7 +1114,15 @@ export class UIManager {
         }, 400);
 
         // SFX al finalizar
-        if (this.audioService) this.audioService.playSFX(isPlayerWinner ? 'victory' : 'defeat');
+        if (this.audioService) {
+            if (this.gameController?.gameMode === 'local') {
+                // En modo local, siempre reproducir sonido de victoria para ambos jugadores
+                this.audioService.playSFX('victory');
+            } else {
+                // En modo AI, usar victoria/derrota según corresponda
+                this.audioService.playSFX(isPlayerWinner ? 'victory' : 'defeat');
+            }
+        }
     }
 
     onGameReset() {
