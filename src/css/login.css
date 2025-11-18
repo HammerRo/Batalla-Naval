@@ -399,7 +399,7 @@
 }
 
 .ranking-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
     color: white;
     padding: 20px 25px;
     display: flex;
@@ -437,6 +437,7 @@
     padding: 20px;
     max-height: 500px;
     overflow-y: auto;
+    background: rgba(17, 24, 39, 0.95);
 }
 
 .ranking-item {
@@ -445,19 +446,19 @@
     gap: 15px;
     padding: 15px;
     margin-bottom: 10px;
-    background: #f5f5f5;
+    background: rgba(255,255,255,0.04);
     border-radius: 12px;
     transition: all 0.2s;
 }
 
 .ranking-item:hover {
-    background: #e8e8e8;
+    background: rgba(255,255,255,0.08);
     transform: translateX(5px);
 }
 
 .ranking-item--top {
-    background: linear-gradient(135deg, #fff9e6 0%, #ffe6cc 100%);
-    border: 2px solid #ffcc80;
+    background: rgba(59,130,246,0.15);
+    border: 2px solid rgba(59,130,246,0.4);
 }
 
 .ranking-position {
@@ -465,6 +466,7 @@
     font-weight: 700;
     min-width: 40px;
     text-align: center;
+    color: #e5e7eb;
 }
 
 .ranking-info {
@@ -477,7 +479,7 @@
 .ranking-name {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #333;
+    color: #e5e7eb;
 }
 
 .ranking-progress {
@@ -489,28 +491,28 @@
 .ranking-level {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #667eea;
+    color: #3b82f6;
     white-space: nowrap;
 }
 
 .ranking-bar {
     flex: 1;
     height: 6px;
-    background: rgba(102, 126, 234, 0.2);
+    background: rgba(59, 130, 246, 0.2);
     border-radius: 10px;
     overflow: hidden;
 }
 
 .ranking-bar-fill {
     height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
     border-radius: 10px;
     transition: width 0.3s ease;
 }
 
 .ranking-bar-text {
     font-size: 0.8rem;
-    color: #666;
+    color: #9ca3af;
     white-space: nowrap;
 }
 
@@ -522,7 +524,7 @@
 .ranking-stat {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #666;
+    color: #9ca3af;
 }
 
 .ranking-streak {
@@ -534,21 +536,21 @@
 .ranking-empty {
     text-align: center;
     padding: 40px 20px;
-    color: #999;
+    color: #9ca3af;
     font-size: 1.1rem;
 }
 
 .ranking-footer {
     padding: 15px 25px;
-    background: #f9f9f9;
-    border-top: 1px solid #e0e0e0;
+    background: rgba(17, 24, 39, 0.95);
+    border-top: 1px solid rgba(255,255,255,0.08);
     text-align: center;
 }
 
 .ranking-note {
     margin: 0;
     font-size: 0.85rem;
-    color: #666;
+    color: #9ca3af;
 }
 
 @media (max-width: 480px) {
