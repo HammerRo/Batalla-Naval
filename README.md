@@ -78,16 +78,6 @@ test/
 
 
 ## Ejecutar localmente
-Cualquier servidor estático funciona. Opciones rápidas en Windows (PowerShell 5.1):
 
-- VS Code (recomendado): extensión "Live Server" y abrir `index.html` con "Open with Live Server".
-- Python:
-```powershell
-python -m http.server 8000
-```
-Navega a: http://localhost:8000/
+- VS Code: extensión "Live Server" y abrir `index.html` con "Open with Live Server".
 
-- Node.js:
-```powershell
-npx http-server -p 8000
-```
