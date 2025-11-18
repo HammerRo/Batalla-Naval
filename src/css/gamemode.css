@@ -208,6 +208,16 @@
 }
 
 /* Responsive */
+@media (max-width: 900px) {
+    .gamemode-container {
+        padding: 35px 25px;
+    }
+
+    .gamemode-title {
+        font-size: 2.2rem;
+    }
+}
+
 @media (max-width: 768px) {
     .gamemode-container {
         padding: 30px 20px;
@@ -218,8 +228,13 @@
         font-size: 2rem;
     }
 
+    .gamemode-subtitle {
+        font-size: 1rem;
+    }
+
     .gamemode-options {
         grid-template-columns: 1fr;
+        gap: 18px;
     }
 
     .gamemode-card {
@@ -235,9 +250,34 @@
     }
 }
 
+@media (max-width: 600px) {
+    .gamemode-container {
+        padding: 25px 18px;
+        margin: 15px;
+    }
+
+    .gamemode-title {
+        font-size: 1.8rem;
+    }
+
+    .gamemode-header {
+        margin-bottom: 30px;
+    }
+
+    .difficulty-icon {
+        font-size: 2.2rem;
+        min-width: 45px;
+    }
+
+    .difficulty-info h3 {
+        font-size: 1.2rem;
+    }
+}
+
 @media (max-width: 480px) {
     .gamemode-container {
         padding: 20px 15px;
+        margin: 10px;
     }
 
     .gamemode-title {
@@ -245,7 +285,12 @@
     }
 
     .gamemode-subtitle {
-        font-size: 1rem;
+        font-size: 0.95rem;
+    }
+
+    .gamemode-header {
+        margin-bottom: 25px;
+        padding-bottom: 15px;
     }
 
     .gamemode-options {
@@ -272,6 +317,56 @@
 
     .gamemode-card-features {
         font-size: 0.85rem;
+    }
+
+    .difficulty-btn {
+        padding: 16px;
+        gap: 15px;
+    }
+
+    .difficulty-icon {
+        font-size: 2rem;
+        min-width: 40px;
+    }
+
+    .difficulty-info h3 {
+        font-size: 1.1rem;
+    }
+
+    .difficulty-info p {
+        font-size: 0.88rem;
+    }
+
+    .btn-back {
+        padding: 10px 24px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .gamemode-container {
+        padding: 18px 12px;
+    }
+
+    .gamemode-title {
+        font-size: 1.3rem;
+    }
+
+    .gamemode-options {
+        gap: 12px;
+    }
+
+    .gamemode-card {
+        padding: 18px 12px;
+    }
+
+    .gamemode-card-icon {
+        font-size: 1.8rem;
+    }
+
+    .difficulty-btn {
+        padding: 14px;
+        gap: 12px;
     }
 }
 

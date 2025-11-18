@@ -356,14 +356,58 @@
 
 /* ==================== RESPONSIVE ==================== */
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+    .login-container {
+        padding: 35px 25px;
+        margin: 15px;
+    }
+
+    .login-title {
+        font-size: 30px;
+    }
+
+    .login-subtitle {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 600px) {
     .login-container {
         padding: 30px 20px;
-        margin: 20px;
+        margin: 10px;
     }
 
     .login-title {
         font-size: 28px;
+    }
+
+    .login-tabs {
+        gap: 8px;
+    }
+
+    .form-input {
+        padding: 11px 14px;
+        font-size: 13px;
+    }
+
+    .login-btn, .login-btn-guest {
+        padding: 13px 18px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-container {
+        padding: 25px 18px;
+        margin: 10px;
+    }
+
+    .login-title {
+        font-size: 26px;
+    }
+
+    .login-subtitle {
+        font-size: 12px;
     }
 
     .btn--large {
@@ -373,10 +417,24 @@
 
     .login-tabs {
         flex-direction: column;
+        gap: 6px;
     }
 
     .login-tab {
         padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .form-label {
+        font-size: 12px;
+    }
+
+    .form-input {
+        padding: 10px 12px;
+    }
+
+    .login-btn, .login-btn-guest, .login-btn-ranking {
+        padding: 12px 16px;
     }
 
     .user-display {
@@ -387,6 +445,24 @@
     .user-info {
         flex-direction: column;
         gap: 8px;
+    }
+}
+
+@media (max-width: 360px) {
+    .login-container {
+        padding: 20px 15px;
+    }
+
+    .login-title {
+        font-size: 24px;
+    }
+
+    .login-header {
+        margin-bottom: 20px;
+    }
+
+    .login-tabs {
+        margin-bottom: 20px;
     }
 }
 

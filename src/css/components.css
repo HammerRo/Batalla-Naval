@@ -751,6 +751,41 @@
     background: var(--color-danger);
 }
 
+@media (max-width: 1200px) {
+    .game-container {
+        padding: var(--spacing-lg);
+    }
+}
+
+@media (max-width: 900px) {
+    :root {
+        --cell-size: 36px;
+    }
+
+    .game-title {
+        font-size: 2rem;
+    }
+
+    .boards-container {
+        gap: var(--spacing-lg);
+    }
+
+    .btn-back {
+        left: 10px;
+        top: 18px;
+        font-size: 0.95rem;
+        padding: 5px 8px;
+    }
+
+    .ships-panel {
+        padding: var(--spacing-md);
+    }
+
+    .controls-panel {
+        gap: var(--spacing-sm);
+    }
+}
+
 @media (max-width: 768px) {
     :root {
         --cell-size: 32px;
@@ -758,6 +793,154 @@
     
     .boards-container {
         grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .game-container {
+        padding: var(--spacing-md);
+        border-radius: var(--border-radius-md);
+    }
+
+    .game-title {
+        font-size: 1.75rem;
+    }
+
+    .board-title {
+        font-size: 1.1rem;
+        padding: 8px 16px;
+    }
+
+    .ships-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+
+    .btn {
+        padding: var(--spacing-sm) var(--spacing-lg);
+        font-size: 0.95rem;
+    }
+
+    .modal-content {
+        padding: var(--spacing-lg);
+        width: 95%;
+    }
+}
+
+@media (max-width: 600px) {
+    :root {
+        --cell-size: 28px;
+    }
+
+    .game-header {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .game-title {
+        font-size: 1.5rem;
+    }
+
+    .btn-back {
+        position: static;
+        width: 100%;
+        margin-bottom: var(--spacing-sm);
+        text-align: center;
+    }
+
+    .board__cell {
+        font-size: 16px;
+    }
+
+    .orientation-selector {
+        flex-direction: column;
+    }
+
+    .btn-orientation {
+        width: 100%;
+    }
+
+    .ships-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .controls-panel {
+        flex-direction: column;
+    }
+
+    .controls-panel .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --cell-size: 26px;
+    }
+
+    .game-container {
+        padding: var(--spacing-sm);
+    }
+
+    .game-title {
+        font-size: 1.25rem;
+    }
+
+    .board-title {
+        font-size: 1rem;
+        padding: 6px 12px;
+    }
+
+    .board {
+        gap: 1px;
+        padding: 1px;
+    }
+
+    .ship-card {
+        padding: var(--spacing-sm);
+    }
+
+    .ship-card__name {
+        font-size: 0.9rem;
+    }
+
+    .ship-card__segment {
+        width: 18px;
+        height: 18px;
+    }
+
+    .panel-title {
+        font-size: 1.1rem;
+    }
+
+    .placement-hint {
+        font-size: 0.9rem;
+        padding: var(--spacing-sm);
+    }
+
+    .help-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .turn-timer {
+        font-size: 1rem;
+        padding: 8px 12px;
+    }
+}
+
+@media (max-width: 360px) {
+    :root {
+        --cell-size: 24px;
+    }
+
+    .game-title {
+        font-size: 1.1rem;
+    }
+
+    .board__cell {
+        font-size: 14px;
+    }
+
+    .ship-card__segment {
+        width: 16px;
+        height: 16px;
     }
 }
 

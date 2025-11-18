@@ -274,6 +274,16 @@
 }
 
 /* Responsive */
+@media (max-width: 900px) {
+    .menu-container {
+        padding: 35px 25px;
+    }
+
+    .menu-title {
+        font-size: 2.2rem;
+    }
+}
+
 @media (max-width: 768px) {
     .menu-container {
         padding: 30px 20px;
@@ -300,15 +310,44 @@
     .menu-button-desc {
         font-size: 0.85rem;
     }
+
+    .user-progression {
+        max-width: 100%;
+    }
+
+    .progression-stats {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 600px) {
+    .menu-container {
+        padding: 25px 18px;
+        margin: 15px;
+    }
+
+    .menu-title {
+        font-size: 1.8rem;
+    }
+
+    .menu-header {
+        margin-bottom: 30px;
+    }
 }
 
 @media (max-width: 480px) {
     .menu-container {
         padding: 20px 15px;
+        margin: 10px;
     }
 
     .menu-title {
         font-size: 1.5rem;
+    }
+
+    .menu-header {
+        margin-bottom: 25px;
+        padding-bottom: 15px;
     }
 
     .menu-button {
@@ -320,7 +359,61 @@
         font-size: 1.8rem;
     }
 
+    .menu-button-title {
+        font-size: 0.95rem;
+    }
+
+    .menu-button-desc {
+        font-size: 0.8rem;
+    }
+
     .user-badge {
         font-size: 0.85rem;
+        padding: 6px 14px;
+    }
+
+    .user-progression {
+        padding: 10px 16px;
+        gap: 6px;
+    }
+
+    .progression-label {
+        font-size: 0.9rem;
+    }
+
+    .progression-points {
+        font-size: 0.8rem;
+    }
+
+    .progression-stat {
+        font-size: 0.85rem;
+    }
+
+    .btn-logout {
+        padding: 10px 24px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .menu-container {
+        padding: 18px 12px;
+    }
+
+    .menu-title {
+        font-size: 1.3rem;
+    }
+
+    .menu-buttons {
+        gap: 12px;
+    }
+
+    .menu-button {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .menu-button-icon {
+        font-size: 1.6rem;
     }
 }
