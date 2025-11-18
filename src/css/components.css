@@ -440,8 +440,10 @@
 .placement-hint {
     text-align: center;
     padding: var(--spacing-md);
-    background: #fff9c4;
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.35);
     border-radius: var(--border-radius-md);
+    color: var(--color-text);
 }
 
 .controls-panel {
