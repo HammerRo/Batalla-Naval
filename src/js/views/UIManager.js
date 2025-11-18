@@ -1240,8 +1240,8 @@ export class UIManager {
             
             let statsHTML = `
                 <div style="display: grid; gap: 10px;">
-                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #f5f5f5; border-radius: 8px;">
-                        <span style="font-weight: bold;">Ganador:</span>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.04); border-radius: 8px;">
+                        <span style="font-weight: bold; color: #e5e7eb;">Ganador:</span>
                         <span style="color: var(--color-primary);">${data.winner}</span>
                     </div>`;
 
@@ -1251,7 +1251,7 @@ export class UIManager {
                 const isVictory = prog.pointsEarned !== undefined;
                 
                 statsHTML += `
-                    <div style="padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="padding: 15px; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; border-radius: 8px; margin-bottom: 10px;">
                         <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; text-align: center;">
                             ${isVictory ? '📈 Progresión' : '📉 Progresión'}
                         </div>
@@ -1285,17 +1285,17 @@ export class UIManager {
 
             statsHTML += `
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <div style="padding: 10px; background: #f5f5f5; border-radius: 8px;">
-                            <div style="font-weight: bold; margin-bottom: 6px;">${p1.name}</div>
-                            <div>Aciertos: <strong>${p1.hits}</strong></div>
-                            <div>Fallos: <strong>${p1.misses}</strong></div>
-                            <div>Total: <strong>${p1.total}</strong></div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.04); border-radius: 8px;">
+                            <div style="font-weight: bold; margin-bottom: 6px; color: #e5e7eb;">${p1.name}</div>
+                            <div style="color: #9ca3af;">Aciertos: <strong style="color: #e5e7eb;">${p1.hits}</strong></div>
+                            <div style="color: #9ca3af;">Fallos: <strong style="color: #e5e7eb;">${p1.misses}</strong></div>
+                            <div style="color: #9ca3af;">Total: <strong style="color: #e5e7eb;">${p1.total}</strong></div>
                         </div>
-                        <div style="padding: 10px; background: #f5f5f5; border-radius: 8px;">
-                            <div style="font-weight: bold; margin-bottom: 6px;">${p2.name}</div>
-                            <div>Aciertos: <strong>${p2.hits}</strong></div>
-                            <div>Fallos: <strong>${p2.misses}</strong></div>
-                            <div>Total: <strong>${p2.total}</strong></div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.04); border-radius: 8px;">
+                            <div style="font-weight: bold; margin-bottom: 6px; color: #e5e7eb;">${p2.name}</div>
+                            <div style="color: #9ca3af;">Aciertos: <strong style="color: #e5e7eb;">${p2.hits}</strong></div>
+                            <div style="color: #9ca3af;">Fallos: <strong style="color: #e5e7eb;">${p2.misses}</strong></div>
+                            <div style="color: #9ca3af;">Total: <strong style="color: #e5e7eb;">${p2.total}</strong></div>
                         </div>
                     </div>
                 </div>
