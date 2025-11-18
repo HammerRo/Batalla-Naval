@@ -132,8 +132,8 @@ export class BoardView {
 
         const basePath = `${this.assetBase}/board`;
         const overlay = isValid
-            ? `${basePath}/cell_hit_mark.png`
-            : `${basePath}/cell_miss_mark.png`;
+            ? `${basePath}/cell_miss_mark.png`
+            : `${basePath}/cell_hit_mark.png`;
 
         positions.forEach(({ row, col }) => {
             const cell = this.getCell(row, col);
