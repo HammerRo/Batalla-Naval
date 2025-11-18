@@ -256,6 +256,9 @@
     font-size: 20px;
     border: 1px solid var(--color-water-dark);
     transition: all 0.2s;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 
 .board__cell:hover:not(.board__cell--hit):not(.board__cell--miss) {
@@ -268,9 +271,7 @@
 }
 
 /* Ship marker is hidden by default and only shown when the board has the class 'board--reveal-ships' */
-.board--reveal-ships .board__cell--ship::after {
-    content: '⚓';
-}
+.board--reveal-ships .board__cell--ship::after { display: none; }
 
 /* Ensure computer board never shows ship markers by default. Only reveal when
    the board explicitly has the 'board--reveal-ships' class. This prevents
@@ -280,9 +281,7 @@
     background: var(--color-water);
 }
 
-#computerBoard .board__cell--ship::after {
-    display: none;
-}
+#computerBoard .board__cell--ship::after { display: none; }
 
 /* When explicitly revealing ships (end of game), allow markers on computer board */
 #computerBoard.board--reveal-ships .board__cell--ship {
@@ -294,10 +293,7 @@
     background: var(--color-ship);
 }
 
-#computerBoard.board--reveal-ships .board__cell--ship::after {
-    display: inline-block;
-    content: '⚓';
-}
+#computerBoard.board--reveal-ships .board__cell--ship::after { display: none; }
 
 .board__cell--preview {
     background: rgba(74, 144, 226, 0.5);
@@ -311,18 +307,13 @@
     background: var(--color-hit);
 }
 
-.board__cell--hit::before {
-    content: '💥';
-}
+.board__cell--hit::before { content: none; }
 
 .board__cell--miss {
     background: var(--color-miss);
 }
 
-.board__cell--miss::before {
-    content: '○';
-    color: white;
-}
+.board__cell--miss::before { content: none; }
 
 /* Sunk ship styling - distinct color to indicate destroyed ship */
 .board__cell--sunk {
