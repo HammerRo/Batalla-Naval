@@ -20,10 +20,10 @@
 .game-container {
     max-width: 1400px;
     margin: 0 auto;
-    background: white;
+    background: var(--color-gray-100);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-xl);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
 }
 
 .game-header {
@@ -134,12 +134,12 @@
 }
 
 .game-title {
-    color: var(--color-primary);
+    color: var(--color-text);
     font-size: 2.5rem;
 }
 
 .game-status {
-    background: var(--color-gray-100);
+    background: rgba(255,255,255,0.04);
     padding: var(--spacing-md);
     border-radius: var(--border-radius-md);
     font-weight: 600;
@@ -362,7 +362,7 @@
 }
 
 .ship-card {
-    background: white;
+    background: rgba(255,255,255,0.04);
     padding: var(--spacing-md);
     border-radius: var(--border-radius-md);
     border: 3px solid transparent;
@@ -378,7 +378,7 @@
 
 .ship-card--selected {
     border-color: var(--color-primary);
-    background: #e3f2fd;
+    background: rgba(59,130,246,0.12);
 }
 
 .ship-card--disabled {
@@ -394,6 +394,7 @@
 
 .ship-card__name {
     font-weight: bold;
+    color: var(--color-text);
 }
 
 .ship-card__quantity {

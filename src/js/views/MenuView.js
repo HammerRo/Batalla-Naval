@@ -64,6 +64,7 @@ export class MenuView {
         }
 
         this.container.innerHTML = `
+            <div class="cover-hero cover-hero--menu"></div>
             <div class="menu-container">
                 <!-- Header con usuario -->
                 <div class="menu-header">

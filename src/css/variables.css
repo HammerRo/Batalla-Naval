@@ -1,18 +1,19 @@
 :root {
-    /* Colores */
-    --color-primary: #4A90E2;
-    --color-primary-dark: #357ABD;
-    --color-ship: #4A90E2;
-    --color-hit: #E74C3C;
-    --color-miss: #95A5A6;
-    --color-water: #CEDEEA;
-    --color-water-dark: #B8CDD9;
-    --color-success: #28A745;
-    --color-danger: #DC3545;
+    /* Colores - paleta gris/azul/oscura */
+    --color-primary: #3B82F6;           /* Azul principal */
+    --color-primary-dark: #1E40AF;      /* Azul oscuro */
+    --color-ship: #2563EB;              /* Azul del barco */
+    --color-hit: #EF4444;               /* Rojo impacto */
+    --color-miss: #64748B;              /* Gris azulado */
+    --color-water: #1F2A37;             /* Celda agua */
+    --color-water-dark: #111827;        /* Borde/agua oscura */
+    --color-success: #10B981;           /* Verde */
+    --color-danger: #DC2626;            /* Rojo peligro */
     --color-white: #FFFFFF;
-    --color-gray-100: #F8F9FA;
-    --color-gray-600: #6C757D;
-    --color-gray-800: #343A40;
+    --color-gray-100: #111827;          /* Fondo panels */
+    --color-gray-600: #4B5563;
+    --color-gray-800: #1F2937;
+    --color-text: #E5E7EB;              /* Texto claro global */
     
     /* Espaciado */
     --spacing-sm: 8px;

@@ -23,6 +23,7 @@ export class LoginScreen {
         container.id = 'loginScreen';
 
         container.innerHTML = `
+            <div class="cover-hero cover-hero--login"></div>
             <div class="login-container">
                 <div class="login-header">
                     <h1 class="login-title">⚓ Batalla Naval</h1>
