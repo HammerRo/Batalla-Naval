@@ -78,4 +78,4 @@ test/
 
 
 ## Ejecutar localmente
-- VS Code (recomendado): extensión "Live Server" y abrir `index.html` con "Open with Live Server".
+- VS Code: extensión "Live Server" y abrir `index.html` con "Open with Live Server".
