@@ -24,7 +24,7 @@ export class GameModeView {
             <div class="gamemode-container">
                 <!-- Header -->
                 <div class="gamemode-header">
-                    <h1 class="gamemode-title">🎮 Selecciona Modo de Juego</h1>
+                    <h1 class="gamemode-title"> Modo de Juego</h1>
                     <p class="gamemode-subtitle">¿Cómo deseas jugar?</p>
                 </div>
 
