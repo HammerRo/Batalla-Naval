@@ -127,23 +127,50 @@ export class BoardView {
     }
 
     showShipPreview(positions, isValid) {
+        // Limpia cualquier preview anterior y pinta usando una imagen overlay
         this.clearPreview();
+
+        const basePath = `${this.assetBase}/board`;
+        const overlay = isValid
+            ? `${basePath}/cell_hit_mark.png`
+            : `${basePath}/cell_miss_mark.png`;
 
         positions.forEach(({ row, col }) => {
             const cell = this.getCell(row, col);
-            if (cell) {
-                if (isValid) {
-                    cell.classList.add(CSS_CLASSES.CELL_PREVIEW);
-                } else {
-                    cell.classList.add(CSS_CLASSES.CELL_INVALID);
-                }
+            if (!cell) return;
+
+            // Marcar semánticamente con clases
+            cell.classList.add(isValid ? CSS_CLASSES.CELL_PREVIEW : CSS_CLASSES.CELL_INVALID);
+            cell.dataset.preview = isValid ? 'valid' : 'invalid';
+
+            // Conservar sprite de barco si existe y es visible
+            const base = `${this.assetBase}/board/cell_default.png`;
+            let shipLayer = null;
+            if (cell.dataset.shipType && (!this.hideShips || cell.dataset.forceVisible === 'true')) {
+                const typeId = cell.dataset.shipType;
+                const idx = cell.dataset.segIndex;
+                const orient = cell.dataset.orientation;
+                const destroyed = cell.dataset.destroyed === 'true';
+                shipLayer = `${this.assetBase}/ships/${typeId}/${typeId}_${orient}_${idx}${destroyed ? 'q' : ''}.png`;
             }
+
+            this.setCellBackgroundLayers(cell, { top: overlay, middle: shipLayer, base });
         });
     }
 
     clearPreview() {
         this.cells.forEach(cell => {
+            if (!cell.dataset.preview) return;
+
+            delete cell.dataset.preview;
             cell.classList.remove(CSS_CLASSES.CELL_PREVIEW, CSS_CLASSES.CELL_INVALID);
+
+            // Restaurar la visual previa sin animaciones
+            if (cell.dataset.shipType && (!this.hideShips || cell.dataset.forceVisible === 'true')) {
+                this.updateCellVisualFromMeta(cell);
+            } else {
+                this.setCellBackgroundLayers(cell, { base: `${this.assetBase}/board/cell_default.png` });
+            }
         });
     }
 

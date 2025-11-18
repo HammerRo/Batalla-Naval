@@ -295,13 +295,9 @@
 
 #computerBoard.board--reveal-ships .board__cell--ship::after { display: none; }
 
-.board__cell--preview {
-    background: rgba(74, 144, 226, 0.5);
-}
+.board__cell--preview { /* overlay manejado por BoardView con imagen */ }
 
-.board__cell--invalid {
-    background: rgba(231, 76, 60, 0.5);
-}
+.board__cell--invalid { /* overlay manejado por BoardView con imagen */ }
 
 .board__cell--hit {
     background: var(--color-hit);
