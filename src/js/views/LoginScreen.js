@@ -165,15 +165,30 @@ export class LoginScreen {
 
         if (this.mode === 'login') {
             result = this.authService.login(username, password);
+            
+            if (result.success) {
+                this.showMessage(messageEl, result.message, 'success');
+                setTimeout(() => this.loginSuccess(result.user), 1000);
+            } else {
+                this.showMessage(messageEl, result.message, 'error');
+            }
         } else {
+            // Modo registro
             result = this.authService.register(username, password);
-        }
-
-        if (result.success) {
-            this.showMessage(messageEl, result.message, 'success');
-            setTimeout(() => this.loginSuccess(result.user), 1000);
-        } else {
-            this.showMessage(messageEl, result.message, 'error');
+            
+            if (result.success) {
+                this.showMessage(messageEl, result.message + '. Por favor inicia sesión.', 'success');
+                // Cambiar a modo login después de 1.5 segundos
+                setTimeout(() => {
+                    this.switchMode(container, 'login');
+                    // Limpiar el formulario
+                    container.querySelector('#username').value = '';
+                    container.querySelector('#password').value = '';
+                    container.querySelector('#formMessage').textContent = '';
+                }, 1500);
+            } else {
+                this.showMessage(messageEl, result.message, 'error');
+            }
         }
     }
 
