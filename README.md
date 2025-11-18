@@ -1,4 +1,5 @@
 # Batalla Naval
+<img src="src/assets/images/covers/login_cover.jpg" width="300" />
 
 
 ## ¿Cómo se juega?
